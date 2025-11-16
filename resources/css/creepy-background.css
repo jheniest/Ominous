@@ -1,0 +1,163 @@
+/* O Abismo Observador - Estilos para uma Atmosfera de Horror Psicológico */
+
+body {
+    background-color: #000;
+    color: #eee;
+    overflow-x: hidden;
+}
+
+#creepy-background-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    overflow: hidden;
+}
+
+/* Camada de Ruído Granulado */
+#background-noise {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    z-index: -5;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOCIgbnVtT2N0YXZlcz0iMyIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiLz48L3N2Zz4=');
+    animation: grain 8s steps(10, end) infinite;
+    opacity: 0.05;
+}
+
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -10%); }
+  20% { transform: translate(-15%, 5%); }
+  30% { transform: translate(7%, -25%); }
+  40% { transform: translate(-5%, 25%); }
+  50% { transform: translate(-15%, 10%); }
+  60% { transform: translate(15%, 0%); }
+  70% { transform: translate(0%, 15%); }
+  80% { transform: translate(3%, 35%); }
+  90% { transform: translate(-10%, 10%); }
+}
+
+/* Camada de Vinheta */
+#background-vignette {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.9) 100%);
+    opacity: 0;
+    transition: opacity 5s ease-in-out;
+}
+
+#background-vignette.active {
+    opacity: 1;
+}
+
+
+/* Estilos para as Aparições (Imagens e Vídeo) */
+.apparition {
+    position: absolute;
+    will-change: transform, opacity;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.apparition.image {
+    mix-blend-mode: screen; /* Fusão natural com o fundo preto */
+    filter: grayscale(100%) contrast(150%) brightness(60%);
+    animation: fadeInOutAsymmetric 15s cubic-bezier(0.7, 0, 0.3, 1) forwards,
+                 pulsateIrregular 7s 2s infinite alternate;
+}
+
+.apparition.image.light {
+    mix-blend-mode: lighten;
+    filter: grayscale(100%) contrast(200%) brightness(40%) sepia(30%);
+}
+
+.apparition.video-container {
+    overflow: hidden; /* Essencial para conter os efeitos */
+    animation: fadeInOutAsymmetric 20s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+}
+
+.apparition.video-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%) contrast(180%) brightness(150%) blur(2px);
+    transform: scale(1.1); /* Garante que as bordas não apareçam */
+    animation: microDistortion 13s infinite alternate;
+    mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, black 40%, transparent 100%);
+}
+
+/* Animações */
+@keyframes fadeInOutAsymmetric {
+    0% { opacity: 0; transform: scale(0.95); }
+    20% { opacity: 0.5; transform: scale(1); }
+    80% { opacity: 0.4; transform: scale(1.05); }
+    100% { opacity: 0; transform: scale(0.9); }
+}
+
+@keyframes pulsateIrregular {
+    0% { opacity: 0.4; }
+    40% { opacity: 0.2; }
+    70% { opacity: 0.5; }
+    100% { opacity: 0.3; }
+}
+
+@keyframes microDistortion {
+    0% { transform: scale(1.1) skewX(0deg); }
+    33% { transform: scale(1.12) skewX(-0.5deg); }
+    66% { transform: scale(1.08) skewX(0.8deg); }
+    100% { transform: scale(1.1) skewX(0deg); }
+}
+
+/* Glitch Effect */
+.glitch {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    animation: glitch-anim 0.2s cubic-bezier(.25, .46, .45, .94) both 2;
+}
+
+@keyframes glitch-anim {
+    0% { transform: translate(0); }
+    20% { transform: translate(-3px, 3px); }
+    40% { transform: translate(-3px, -3px); }
+    60% { transform: translate(3px, 3px); }
+    80% { transform: translate(3px, -3px); }
+    100% { transform: translate(0); }
+}
+
+/* Animação de Brilho Sutil para a Logo */
+.logo-glow {
+  animation: subtle-glow 8s ease-in-out infinite;
+}
+
+@keyframes subtle-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(200, 200, 200, 0.08));
+  }
+  50% {
+    filter: drop-shadow(0 0 18px rgba(200, 200, 200, 0.12));
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .apparition.video-container video {
+        filter: grayscale(100%) contrast(160%) brightness(120%) blur(4px);
+    }
+
+    .apparition.image {
+        filter: grayscale(100%) contrast(120%) brightness(50%) blur(1px);
+    }
+}
