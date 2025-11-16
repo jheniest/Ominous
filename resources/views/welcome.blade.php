@@ -36,15 +36,32 @@
         </button>
     </div>
 
-    {{-- O conteúdo principal do seu site viria aqui.
-         Para demonstração, deixarei um texto simples. --}}
-    <div class="relative py-8 px-6 sm:py-16 lg:px-8 z-10 text-center">
-        <h1 class="text-4xl font-extrabold tracking-tight text-neutral-300 sm:text-5xl md:text-6xl">
-            <span class="block"><img src="{{ asset('creepy_logo/ominous_logo.png') }}" alt="Ominous" class="mx-auto h-[15rem] logo-glow"></span>
-        </h1>
-        <p class="mt-6 max-w-lg mx-auto text-xl text-neutral-400 sm:max-w-3xl">
-            Algo te observa nas sombras.
-        </p>
+    <div class="relative min-h-screen flex flex-col items-center justify-center z-10 px-6">
+        <div class="text-center space-y-12 max-w-md">
+            <img src="{{ asset('creepy_logo/ominous_logo.png') }}" alt="Ominous" class="mx-auto h-[10rem] logo-glow">
+            
+            <p class="text-xl text-neutral-400 font-light tracking-wide">
+                Algo te observa nas sombras.
+            </p>
+
+            <div class="flex flex-col gap-3 w-full mt-16">
+                @auth
+                    <a href="{{ route('dashboard') }}" class="ominous-btn ominous-btn-primary">
+                        <span>Entrar no Abismo</span>
+                    </a>
+                @else
+                    <a href="{{ route('invite.validate') }}" class="ominous-btn ominous-btn-primary">
+                        <span>Entrar com Convite</span>
+                    </a>
+                    <a href="{{ route('purchase.index') }}" class="ominous-btn ominous-btn-secondary">
+                        <span>Comprar Convite</span>
+                    </a>
+                    <a href="{{ route('login') }}" class="ominous-btn ominous-btn-ghost">
+                        <span>Login</span>
+                    </a>
+                @endauth
+            </div>
+        </div>
     </div>
 </body>
 </html>
