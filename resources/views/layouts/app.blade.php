@@ -23,7 +23,7 @@
                             <a href="{{ route('dashboard') }}" class="text-neutral-400 hover:text-neutral-200 transition">
                                 Dashboard
                             </a>
-                            <a href="{{ route('dashboard.invites.index') }}" class="text-neutral-400 hover:text-neutral-200 transition">
+                            <a href="{{ route('profile.edit') }}" class="text-neutral-400 hover:text-neutral-200 transition">
                                 Convites
                             </a>
                             @if(auth()->user()->is_admin)

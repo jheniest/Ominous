@@ -15,7 +15,7 @@
 
             <!-- Filters -->
             <div class="bg-neutral-950/60 backdrop-blur-lg border border-neutral-800 rounded-lg p-6 mb-6">
-                <form method="GET" action="{{ route('admin.invites') }}" class="flex gap-4">
+                <form method="GET" action="{{ route('admin.invites.index') }}" class="flex gap-4">
                     <input 
                         type="text" 
                         name="code" 

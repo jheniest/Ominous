@@ -139,25 +139,20 @@
                             <!-- Actions -->
                             <div class="flex flex-wrap gap-2">
                                 @if($video->status !== 'approved')
-                                <form method="POST" action="{{ route('admin.videos.approve', $video) }}" class="inline">
-                                    @csrf
-                                    <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg font-semibold transition-colors">
-                                        Approve
-                                    </button>
-                                </form>
+                                <button onclick="showApproveModal({{ $video->id }}, '{{ addslashes($video->title) }}')" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg font-semibold transition-colors">
+                                    Approve
+                                </button>
                                 @endif
 
                                 @if($video->status !== 'rejected')
-                                <button onclick="showRejectModal({{ $video->id }}, '{{ $video->title }}')" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg font-semibold transition-colors">
+                                <button onclick="showRejectModal({{ $video->id }}, '{{ addslashes($video->title) }}')" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg font-semibold transition-colors">
                                     Reject
                                 </button>
                                 @endif
 
                                 @if($video->status !== 'hidden')
-                                <form method="POST" action="{{ route('admin.videos.hide', $video) }}" class="inline">
-                                    @csrf
-                                    <button type="submit" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg font-semibold transition-colors">
-                                        Hide
+                                <button onclick="showHideModal({{ $video->id }}, '{{ addslashes($video->title) }}')" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg font-semibold transition-colors">
+                                    Hide
                                     </button>
                                 </form>
                                 @endif
@@ -194,23 +189,74 @@
         </div>
     </div>
 
+    <!-- Approve Modal -->
+    <div id="approveModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-900 rounded-lg border-2 border-green-700 max-w-md w-full p-6">
+            <h3 class="text-xl font-bold text-white mb-4">Aprovar Vídeo</h3>
+            <form id="approveForm" method="POST">
+                @csrf
+                <p class="text-gray-300 mb-4">Vídeo: <span id="approveVideoTitle" class="font-semibold text-white"></span></p>
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-300 mb-2">Nota para o usuário (opcional)</label>
+                    <textarea name="note" rows="3" class="w-full bg-black border border-green-900/50 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-green-500" placeholder="Ex: Ótimo conteúdo! Continue assim."></textarea>
+                </div>
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition-colors">
+                        Aprovar Vídeo
+                    </button>
+                    <button type="button" onclick="document.getElementById('approveModal').classList.add('hidden')" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Reject Modal -->
     <div id="rejectModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
         <div class="bg-gray-900 rounded-lg border-2 border-red-900 max-w-md w-full p-6">
-            <h3 class="text-xl font-bold text-white mb-4">Reject Video</h3>
+            <h3 class="text-xl font-bold text-white mb-4">Recusar Vídeo</h3>
             <form id="rejectForm" method="POST">
                 @csrf
-                <p class="text-gray-300 mb-4">Video: <span id="rejectVideoTitle" class="font-semibold text-white"></span></p>
+                <p class="text-gray-300 mb-4">Vídeo: <span id="rejectVideoTitle" class="font-semibold text-white"></span></p>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-300 mb-2">Motivo da Recusa *</label>
+                    <textarea name="reason" rows="3" required class="w-full bg-black border border-red-900/50 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-500" placeholder="Motivo técnico da recusa..."></textarea>
+                </div>
                 <div class="mb-6">
-                    <label class="block text-sm font-semibold text-gray-300 mb-2">Rejection Reason *</label>
-                    <textarea name="reason" rows="4" required class="w-full bg-black border border-red-900/50 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-500" placeholder="Explain why this video is being rejected..."></textarea>
+                    <label class="block text-sm font-semibold text-gray-300 mb-2">Mensagem para o Usuário (opcional)</label>
+                    <textarea name="note" rows="3" class="w-full bg-black border border-red-900/50 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-500" placeholder="Mensagem mais amigável para notificação..."></textarea>
+                    <p class="text-xs text-gray-500 mt-1">Se não preencher, será usada a razão acima.</p>
                 </div>
                 <div class="flex gap-3">
                     <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition-colors">
-                        Reject Video
+                        Recusar Vídeo
                     </button>
                     <button type="button" onclick="document.getElementById('rejectModal').classList.add('hidden')" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold transition-colors">
-                        Cancel
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Hide Modal -->
+    <div id="hideModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-900 rounded-lg border-2 border-gray-700 max-w-md w-full p-6">
+            <h3 class="text-xl font-bold text-white mb-4">Ocultar Vídeo</h3>
+            <form id="hideForm" method="POST">
+                @csrf
+                <p class="text-gray-300 mb-4">Vídeo: <span id="hideVideoTitle" class="font-semibold text-white"></span></p>
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-300 mb-2">Nota para o usuário (opcional)</label>
+                    <textarea name="note" rows="3" class="w-full bg-black border border-gray-700/50 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-gray-500" placeholder="Ex: Vídeo foi ocultado temporariamente..."></textarea>
+                </div>
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded-lg font-semibold transition-colors">
+                        Ocultar Vídeo
+                    </button>
+                    <button type="button" onclick="document.getElementById('hideModal').classList.add('hidden')" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold transition-colors">
+                        Cancelar
                     </button>
                 </div>
             </form>
@@ -218,10 +264,22 @@
     </div>
 
     <script>
+        function showApproveModal(videoId, videoTitle) {
+            document.getElementById('approveVideoTitle').textContent = videoTitle;
+            document.getElementById('approveForm').action = '/admin/videos/' + videoId + '/approve';
+            document.getElementById('approveModal').classList.remove('hidden');
+        }
+
         function showRejectModal(videoId, videoTitle) {
             document.getElementById('rejectVideoTitle').textContent = videoTitle;
             document.getElementById('rejectForm').action = '/admin/videos/' + videoId + '/reject';
             document.getElementById('rejectModal').classList.remove('hidden');
+        }
+
+        function showHideModal(videoId, videoTitle) {
+            document.getElementById('hideVideoTitle').textContent = videoTitle;
+            document.getElementById('hideForm').action = '/admin/videos/' + videoId + '/hide';
+            document.getElementById('hideModal').classList.remove('hidden');
         }
     </script>
 </x-app-layout>

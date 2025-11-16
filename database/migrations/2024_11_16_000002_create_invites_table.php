@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamp('expires_at')->nullable();
             $table->boolean('is_active')->default(true);
             $table->enum('status', ['active', 'expired', 'consumed', 'suspended'])->default('active');
-            $table->enum('source', ['manual', 'purchase', 'admin'])->default('manual');
+            $table->enum('source', ['manual', 'purchase', 'guest_purchase', 'admin'])->default('manual');
             $table->text('notes')->nullable();
             $table->timestamps();
             

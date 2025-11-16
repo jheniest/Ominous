@@ -23,6 +23,8 @@ class Purchase extends Model
         'paid_at',
         'payment_details',
         'ip_address',
+        'guest_name',
+        'guest_email',
     ];
 
     protected $casts = [
@@ -78,5 +80,28 @@ class Purchase extends Model
     public function markAsRefunded(): void
     {
         $this->update(['status' => 'refunded']);
+    }
+
+    public function isGuestPurchase(): bool
+    {
+        return $this->user_id === null;
+    }
+
+    public function getPurchaserNameAttribute(): string
+    {
+        if ($this->isGuestPurchase()) {
+            return $this->guest_name;
+        }
+        
+        return $this->user->name;
+    }
+
+    public function getPurchaserEmailAttribute(): string
+    {
+        if ($this->isGuestPurchase()) {
+            return $this->guest_email;
+        }
+        
+        return $this->user->email;
     }
 }

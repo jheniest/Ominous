@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Video;
 use App\Models\VideoReport;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -33,29 +34,68 @@ class VideoModerationController extends Controller
         return view('admin.videos.index', compact('videos', 'stats', 'status'));
     }
 
-    public function approve(Video $video)
+    public function approve(Request $request, Video $video)
     {
+        $request->validate([
+            'note' => 'nullable|string|max:500',
+        ]);
+
         $video->approve(Auth::user());
 
-        return back()->with('success', 'Video approved successfully.');
+        // Criar notificação para o autor do vídeo
+        Notification::create([
+            'user_id' => $video->user_id,
+            'type' => 'video_approved',
+            'title' => 'Vídeo Aprovado',
+            'message' => $request->note ?? 'Seu vídeo "' . $video->title . '" foi aprovado e agora está visível para todos.',
+            'related_video_id' => $video->id,
+            'action_by_user_id' => Auth::id(),
+        ]);
+
+        return back()->with('success', 'Vídeo aprovado e notificação enviada.');
     }
 
     public function reject(Request $request, Video $video)
     {
         $validated = $request->validate([
             'reason' => 'required|string|max:500',
+            'note' => 'nullable|string|max:500',
         ]);
 
         $video->reject($validated['reason']);
 
-        return back()->with('success', 'Video rejected.');
+        // Criar notificação para o autor do vídeo
+        Notification::create([
+            'user_id' => $video->user_id,
+            'type' => 'video_rejected',
+            'title' => 'Vídeo Recusado',
+            'message' => $validated['note'] ?? $validated['reason'],
+            'related_video_id' => $video->id,
+            'action_by_user_id' => Auth::id(),
+        ]);
+
+        return back()->with('success', 'Vídeo recusado e notificação enviada.');
     }
 
-    public function hide(Video $video)
+    public function hide(Request $request, Video $video)
     {
+        $request->validate([
+            'note' => 'nullable|string|max:500',
+        ]);
+
         $video->update(['status' => 'hidden']);
 
-        return back()->with('success', 'Video hidden from public view.');
+        // Criar notificação para o autor do vídeo
+        Notification::create([
+            'user_id' => $video->user_id,
+            'type' => 'video_hidden',
+            'title' => 'Vídeo Ocultado',
+            'message' => $request->note ?? 'Seu vídeo "' . $video->title . '" foi ocultado pela moderação.',
+            'related_video_id' => $video->id,
+            'action_by_user_id' => Auth::id(),
+        ]);
+
+        return back()->with('success', 'Vídeo ocultado e notificação enviada.');
     }
 
     public function toggleFeatured(Video $video)

@@ -55,7 +55,7 @@
                     </button>
 
                     <div class="text-center">
-                        <a href="{{ route('purchase.index') }}" class="text-sm text-neutral-500 hover:text-neutral-400 transition">
+                        <a href="{{ route('guest.purchase.index') }}" class="text-sm text-neutral-500 hover:text-neutral-400 transition">
                             Não tem convite? Compre aqui
                         </a>
                     </div>

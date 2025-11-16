@@ -31,8 +31,8 @@
                 <div class="bg-neutral-950/60 backdrop-blur-lg border border-neutral-800 rounded-lg p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold text-neutral-200">Convites Recentes</h3>
-                        <a href="{{ route('dashboard.invites.index') }}" class="text-sm text-red-700 hover:text-red-500">
-                            Ver todos →
+                        <a href="{{ route('profile.edit') }}" class="text-sm text-red-700 hover:text-red-500">
+                            Gerenciar →
                         </a>
                     </div>
                     

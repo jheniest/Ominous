@@ -43,7 +43,7 @@
             </div>
 
             <div class="flex gap-4">
-                <a href="{{ route('dashboard.invites.index') }}" class="flex-1 px-6 py-3 bg-red-950/60 hover:bg-red-900/60 border border-red-900 hover:border-red-700 text-red-400 hover:text-red-300 rounded-lg transition font-medium text-center">
+                <a href="{{ route('profile.edit') }}" class="flex-1 px-6 py-3 bg-red-950/60 hover:bg-red-900/60 border border-red-900 hover:border-red-700 text-red-400 hover:text-red-300 rounded-lg transition font-medium text-center">
                     Ver Todos os Convites
                 </a>
                 <a href="{{ route('dashboard') }}" class="flex-1 px-6 py-3 bg-neutral-900/60 hover:bg-neutral-800/60 border border-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-neutral-300 rounded-lg transition font-medium text-center">

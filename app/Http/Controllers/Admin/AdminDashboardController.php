@@ -114,24 +114,30 @@ class AdminDashboardController extends Controller
         }
 
         $purchases = $query->latest()->paginate(30);
+        
+        $stats = [
+            'total_revenue' => Purchase::where('status', 'completed')->sum('amount_paid'),
+            'completed_purchases' => Purchase::where('status', 'completed')->count(),
+            'pending_purchases' => Purchase::where('status', 'pending')->count(),
+        ];
 
-        return view('admin.purchases.index', compact('purchases'));
+        return view('admin.purchases.index', compact('purchases', 'stats'));
     }
 
     public function activityLogs(Request $request)
     {
         $query = ActivityLog::with('user');
 
-        if ($request->action) {
-            $query->where('action', $request->action);
+        if ($request->type) {
+            $query->where('type', $request->type);
         }
 
-        if ($request->user_id) {
-            $query->where('user_id', $request->user_id);
+        if ($request->date) {
+            $query->whereDate('created_at', $request->date);
         }
 
-        $logs = $query->latest()->paginate(50);
+        $activities = $query->latest()->paginate(50);
 
-        return view('admin.activity.index', compact('logs'));
+        return view('admin.activity.index', compact('activities'));
     }
 }

@@ -103,7 +103,7 @@
                     <a href="{{ route('invite.validate') }}" class="block text-sm text-neutral-500 hover:text-neutral-400 transition">
                         Não tem conta? Use um convite
                     </a>
-                    <a href="{{ route('purchase.index') }}" class="block text-sm text-neutral-500 hover:text-neutral-400 transition">
+                    <a href="{{ route('guest.purchase.index') }}" class="block text-sm text-neutral-500 hover:text-neutral-400 transition">
                         Ou compre um convite aqui
                     </a>
                 </div>

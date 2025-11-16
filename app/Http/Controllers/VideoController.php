@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Video;
 use App\Models\Comment;
 use App\Models\VideoReport;
+use App\Services\VideoMediaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class VideoController extends Controller
 {
@@ -51,12 +53,7 @@ class VideoController extends Controller
 
     public function show(Video $video)
     {
-        // Only show approved videos to non-admins
-        if (!Auth::user()->is_admin && $video->status !== 'approved') {
-            abort(403, 'This video is not available.');
-        }
-
-        $video->load('user', 'approvedBy');
+        $video->load('user', 'approvedBy', 'media');
         $video->incrementViews();
 
         // Get top-level comments with replies
@@ -88,23 +85,11 @@ class VideoController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:5000',
-            'video_url' => 'nullable|url|max:500',
-            'video_file' => 'nullable|file|mimes:mp4,mov,avi,wmv|max:102400', // 100MB
-            'thumbnail_url' => 'nullable|url|max:500',
+            'media_files' => 'required|array|min:1|max:10',
+            'media_files.*' => 'file|mimes:mp4,mov,avi,wmv,jpg,jpeg,png,gif,webp|max:102400', // 100MB per file
             'category' => 'required|in:breaking_news,footage,investigation,accident,crime,natural_disaster,other',
             'is_nsfw' => 'boolean',
         ]);
-
-        // Handle video file upload
-        $videoUrl = $validated['video_url'] ?? null;
-        if ($request->hasFile('video_file')) {
-            $path = $request->file('video_file')->store('videos', 'public');
-            $videoUrl = asset('storage/' . $path);
-        }
-
-        if (!$videoUrl) {
-            return back()->withErrors(['video_url' => 'Você deve fornecer uma URL de vídeo ou fazer upload de um arquivo.']);
-        }
 
         // Admin posts are auto-approved
         $status = Auth::user()->is_admin ? 'approved' : 'pending';
@@ -112,8 +97,8 @@ class VideoController extends Controller
         $video = Auth::user()->videos()->create([
             'title' => $validated['title'],
             'description' => $validated['description'],
-            'video_url' => $videoUrl,
-            'thumbnail_url' => $validated['thumbnail_url'] ?? null,
+            'video_url' => '', // Will be set by first media
+            'thumbnail_url' => null, // Will be generated
             'category' => $validated['category'],
             'is_nsfw' => $validated['is_nsfw'] ?? false,
             'status' => $status,
@@ -121,9 +106,18 @@ class VideoController extends Controller
             'approved_at' => Auth::user()->is_admin ? now() : null,
         ]);
 
+        // Process media files
+        $mediaService = new VideoMediaService();
+        $mediaItems = $mediaService->processMediaFiles($video, $validated['media_files']);
+
+        // Set video_url to first media item
+        if (!empty($mediaItems)) {
+            $video->update(['video_url' => $mediaItems[0]->url]);
+        }
+
         $message = Auth::user()->is_admin 
-            ? 'Vídeo publicado com sucesso!' 
-            : 'Vídeo enviado para moderação. Você será notificado quando for revisado.';
+            ? 'Conteúdo publicado com sucesso!' 
+            : 'Conteúdo enviado para moderação. Você será notificado quando for revisado.';
 
         return redirect()->route('videos.my-videos')->with('success', $message);
     }
@@ -228,14 +222,20 @@ class VideoController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        // Delete video file if it's stored locally
+        // Delete all media files
+        $mediaService = new VideoMediaService();
+        $mediaService->deleteVideoMedia($video);
+
+        // Delete old video file if exists (backward compatibility)
         if ($video->video_url && str_contains($video->video_url, 'storage/videos/')) {
             $path = str_replace(asset('storage/'), '', $video->video_url);
-            Storage::disk('public')->delete($path);
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
         }
 
         $video->delete();
 
-        return redirect()->route('videos.my-videos')->with('success', 'Vídeo deletado com sucesso.');
+        return redirect()->route('videos.my-videos')->with('success', 'Conteúdo deletado com sucesso.');
     }
 }

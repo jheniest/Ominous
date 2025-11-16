@@ -57,6 +57,11 @@ class Video extends Model
         return $this->hasMany(VideoReport::class);
     }
 
+    public function media()
+    {
+        return $this->hasMany(VideoMedia::class)->orderBy('order');
+    }
+
     public function scopeApproved($query)
     {
         return $query->where('status', 'approved');

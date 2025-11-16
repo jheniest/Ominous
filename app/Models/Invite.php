@@ -67,6 +67,11 @@ class Invite extends Model
         return $this->hasMany(InviteRedemption::class);
     }
 
+    public function redeemedBy(): HasMany
+    {
+        return $this->hasMany(User::class, 'invite_code_used', 'code');
+    }
+
     public function isValid(): bool
     {
         if (!$this->is_active || $this->status !== 'active') {

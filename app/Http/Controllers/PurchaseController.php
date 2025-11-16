@@ -23,7 +23,7 @@ class PurchaseController extends Controller
     public function create(Request $request)
     {
         $request->validate([
-            'quantity' => ['required', 'integer', 'in:1,3,5,10'],
+            'quantity' => ['required', 'integer', 'in:1,2,3,4,5'],
         ]);
 
         $pricing = PurchaseService::PRICING;
@@ -36,8 +36,8 @@ class PurchaseController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'quantity' => ['required', 'integer', 'in:1,3,5,10'],
-            'payment_method' => ['required', 'string', 'in:pix'],
+            'quantity' => ['required', 'integer', 'in:1,2,3,4,5'],
+            'payment_method' => ['required', 'string', 'in:mercado_pago,crypto,pix,boleto'],
         ]);
 
         $purchase = $this->purchaseService->createPurchase(
@@ -46,9 +46,27 @@ class PurchaseController extends Controller
             $request->payment_method
         );
 
-        $pixData = $this->purchaseService->simulatePixPayment($purchase);
-
-        return view('purchase.pix', compact('purchase', 'pixData'));
+        // Redirecionar baseado no método de pagamento
+        switch ($request->payment_method) {
+            case 'pix':
+                $paymentData = $this->purchaseService->simulatePixPayment($purchase);
+                return view('purchase.payment', compact('purchase', 'paymentData'));
+            
+            case 'boleto':
+                $paymentData = $this->purchaseService->simulateBoletoPayment($purchase);
+                return view('purchase.payment', compact('purchase', 'paymentData'));
+            
+            case 'crypto':
+                $paymentData = $this->purchaseService->simulateCryptoPayment($purchase);
+                return view('purchase.payment', compact('purchase', 'paymentData'));
+            
+            case 'mercado_pago':
+                $paymentData = $this->purchaseService->simulateMercadoPagoPayment($purchase);
+                return view('purchase.payment', compact('purchase', 'paymentData'));
+            
+            default:
+                return redirect()->route('purchase.index')->with('error', 'Método de pagamento inválido');
+        }
     }
 
     public function confirmPayment(Request $request, int $id)

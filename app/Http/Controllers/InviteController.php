@@ -66,21 +66,8 @@ class InviteController extends Controller
             }
         }
 
-        $request->validate([
-            'max_uses' => ['required', 'integer', 'min:1', 'max:10'],
-            'days_valid' => ['required', 'integer', 'min:1', 'max:365'],
-            'notes' => ['nullable', 'string', 'max:500'],
-        ]);
-
-        $invite = $this->inviteService->createInvite(
-            auth()->user(),
-            $request->max_uses,
-            $request->days_valid
-        );
-
-        if ($request->notes) {
-            $invite->update(['notes' => $request->notes]);
-        }
+        // Criar convite simples sem parâmetros extras
+        $invite = $this->inviteService->createInvite($user, 1, 365);
 
         return back()->with('success', "Convite {$invite->code} criado com sucesso.");
     }
@@ -89,8 +76,14 @@ class InviteController extends Controller
     {
         $invite = auth()->user()->createdInvites()->findOrFail($id);
 
-        $this->inviteService->suspendInvite($invite, 'Suspenso pelo criador');
+        // Verificar se o convite já foi usado
+        if ($invite->status === 'consumed') {
+            return back()->with('error', 'Não é possível deletar um convite já utilizado.');
+        }
 
-        return back()->with('success', 'Convite suspenso.');
+        $code = $invite->code;
+        $invite->delete();
+
+        return back()->with('success', "Convite {$code} deletado com sucesso.");
     }
 }

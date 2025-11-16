@@ -4,28 +4,35 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Main Video Column -->
                 <div class="lg:col-span-2">
-                    <!-- Video Player -->
+                    <!-- Media Carousel / Video Player -->
                     <div class="bg-black rounded-lg overflow-hidden border-2 border-red-900/50 shadow-2xl shadow-red-900/30">
-                        <div class="aspect-video bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
-                            @if($video->video_file)
-                            <!-- Local Video Player -->
-                            <video controls class="w-full h-full" controlsList="nodownload">
-                                <source src="{{ asset('storage/' . $video->video_file) }}" type="video/mp4">
-                                Seu navegador não suporta a reprodução de vídeo.
-                            </video>
-                            @elseif($video->video_url)
-                            <!-- External Video Embed -->
-                            <iframe src="{{ $video->video_url }}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-                            @else
-                            <!-- No Video Available -->
-                            <div class="text-center">
-                                <svg class="w-24 h-24 mx-auto text-red-900 mb-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
-                                </svg>
-                                <p class="text-gray-500">Video unavailable</p>
+                        @if($video->media && $video->media->count() > 0)
+                            <!-- Multiple Media Carousel -->
+                            <x-media-carousel :media="$video->media" />
+                        @elseif($video->video_file)
+                            <!-- Legacy Single Video Player -->
+                            <div class="aspect-video bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
+                                <video controls class="w-full h-full" controlsList="nodownload">
+                                    <source src="{{ asset('storage/' . $video->video_file) }}" type="video/mp4">
+                                    Seu navegador não suporta a reprodução de vídeo.
+                                </video>
                             </div>
-                            @endif
-                        </div>
+                        @elseif($video->video_url)
+                            <!-- External Video Embed -->
+                            <div class="aspect-video bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
+                                <iframe src="{{ $video->video_url }}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                        @else
+                            <!-- No Video Available -->
+                            <div class="aspect-video bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
+                                <div class="text-center">
+                                    <svg class="w-24 h-24 mx-auto text-red-900 mb-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
+                                    </svg>
+                                    <p class="text-gray-500">Video unavailable</p>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     <!-- Video Info -->
@@ -43,11 +50,13 @@
                                 </div>
                             </div>
                             
-                            <!-- Report Button -->
+                            <!-- Report Button (Hidden for Admin videos) -->
                             @auth
+                            @if(!$video->user->is_admin)
                             <button onclick="document.getElementById('reportModal').classList.remove('hidden')" class="px-4 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded-lg text-sm font-semibold transition-colors border border-red-900">
                                 Report
                             </button>
+                            @endif
                             @endauth
                         </div>
 

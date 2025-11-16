@@ -53,7 +53,7 @@
                     <a href="{{ route('invite.validate') }}" class="ominous-btn ominous-btn-primary">
                         <span>Entrar com Convite</span>
                     </a>
-                    <a href="{{ route('purchase.index') }}" class="ominous-btn ominous-btn-secondary">
+                    <a href="{{ route('guest.purchase.index') }}" class="ominous-btn ominous-btn-secondary">
                         <span>Comprar Convite</span>
                     </a>
                     <a href="{{ route('login') }}" class="ominous-btn ominous-btn-ghost">

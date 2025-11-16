@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\VideoModerationController;
 use App\Http\Controllers\Admin\CommentModerationController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GuestPurchaseController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\VideoController;
@@ -18,14 +19,23 @@ Route::get('/', function () {
 Route::get('/invite', [InviteController::class, 'showValidationForm'])->name('invite.validate');
 Route::post('/invite/validate', [InviteController::class, 'validate'])->name('invite.check');
 
+// Guest Purchase Routes (No Auth Required)
+Route::prefix('buy-invite')->name('guest.purchase.')->group(function () {
+    Route::get('/', [GuestPurchaseController::class, 'index'])->name('index');
+    Route::post('/checkout', [GuestPurchaseController::class, 'checkout'])->name('checkout');
+    Route::post('/process', [GuestPurchaseController::class, 'store'])->name('store');
+    Route::post('/{id}/confirm', [GuestPurchaseController::class, 'confirmPayment'])->name('confirm');
+    Route::get('/{id}/success', [GuestPurchaseController::class, 'success'])->name('success');
+});
+
 // Auth Routes (Custom Registration with Invite)
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('/register', [RegisteredUserController::class, 'store']);
 });
 
-// Purchase Routes (Public - requires auth)
-Route::middleware('auth')->prefix('buy-invite')->name('purchase.')->group(function () {
+// Purchase Routes for Authenticated Users (Separated)
+Route::middleware('auth')->prefix('dashboard/buy-invite')->name('purchase.')->group(function () {
     Route::get('/', [PurchaseController::class, 'index'])->name('index');
     Route::post('/checkout', [PurchaseController::class, 'create'])->name('create');
     Route::post('/process', [PurchaseController::class, 'store'])->name('store');
@@ -51,6 +61,16 @@ Route::middleware(['auth', 'check.suspended'])->group(function () {
     // Purchase History
     Route::get('/dashboard/purchases/{id}', [PurchaseController::class, 'show'])->name('dashboard.purchases.show');
     
+    // Notifications
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [App\Http\Controllers\NotificationController::class, 'index'])->name('index');
+        Route::get('/unread', [App\Http\Controllers\NotificationController::class, 'getUnread'])->name('unread');
+        Route::post('/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('mark-read');
+        Route::post('/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::delete('/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('destroy');
+        Route::delete('/', [App\Http\Controllers\NotificationController::class, 'destroyAll'])->name('destroy-all');
+    });
+    
     // Video Routes (Authenticated)
     Route::get('/videos/create', [VideoController::class, 'create'])->name('videos.create');
     Route::post('/videos', [VideoController::class, 'store'])->name('videos.store');
@@ -62,10 +82,12 @@ Route::middleware(['auth', 'check.suspended'])->group(function () {
     Route::get('/my-videos', [VideoController::class, 'myVideos'])->name('videos.my-videos');
 });
 
-// Public Routes
+// Public Routes (Videos require auth)
 Route::get('/profile/{user}', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
-Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
-Route::get('/videos/{video}', [VideoController::class, 'show'])->name('videos.show');
+Route::middleware(['auth', 'check.suspended'])->group(function () {
+    Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
+    Route::get('/videos/{video}', [VideoController::class, 'show'])->name('videos.show');
+});
 
 // Admin Routes
 Route::middleware(['auth', 'admin', 'check.suspended'])->prefix('admin')->name('admin.')->group(function () {
