@@ -6,6 +6,75 @@ body {
     overflow-x: hidden;
 }
 
+/* Controles de Horror */
+#horror-controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 12px;
+}
+
+.horror-btn {
+    width: 48px;
+    height: 48px;
+    background: rgba(20, 0, 0, 0.8);
+    border: 1px solid rgba(139, 0, 0, 0.6);
+    border-radius: 8px;
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 10px rgba(139, 0, 0, 0.3),
+                inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.horror-btn:hover {
+    background: rgba(40, 0, 0, 0.9);
+    border-color: rgba(180, 0, 0, 0.8);
+    color: #b00;
+    box-shadow: 0 0 15px rgba(180, 0, 0, 0.5),
+                inset 0 0 15px rgba(139, 0, 0, 0.3);
+    transform: scale(1.05);
+}
+
+.horror-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 8px rgba(139, 0, 0, 0.4),
+                inset 0 0 12px rgba(0, 0, 0, 0.7);
+}
+
+.horror-btn.active {
+    background: rgba(60, 0, 0, 0.95);
+    border-color: rgba(200, 0, 0, 0.9);
+    color: #c00;
+    box-shadow: 0 0 20px rgba(200, 0, 0, 0.6),
+                inset 0 0 15px rgba(180, 0, 0, 0.4);
+}
+
+.horror-btn .icon {
+    width: 20px;
+    height: 20px;
+    filter: drop-shadow(0 0 3px currentColor);
+}
+
+@media (max-width: 768px) {
+    #horror-controls {
+        top: 15px;
+        right: 15px;
+        gap: 8px;
+    }
+    
+    .horror-btn {
+        width: 42px;
+        height: 42px;
+    }
+}
+
 #creepy-background-container {
     position: fixed;
     top: 0;
@@ -80,6 +149,32 @@ body {
     filter: grayscale(100%) contrast(200%) brightness(40%) sepia(30%);
 }
 
+.apparition.image.masked {
+    mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 50%, transparent 100%);
+}
+
+/* Efeitos Sombrios Específicos */
+.apparition.image.intense-stare {
+    filter: grayscale(100%) contrast(220%) brightness(45%) saturate(0%);
+    animation: fadeInOutAsymmetric 15s cubic-bezier(0.7, 0, 0.3, 1) forwards,
+                 eyeGlow 5s infinite alternate;
+}
+
+.apparition.image.distorted {
+    filter: grayscale(100%) contrast(180%) brightness(50%) hue-rotate(180deg);
+    animation: fadeInOutAsymmetric 15s cubic-bezier(0.7, 0, 0.3, 1) forwards,
+                 warpDistortion 8s infinite alternate;
+}
+
+.apparition.image.shadowy {
+    filter: grayscale(100%) contrast(160%) brightness(35%) blur(1px);
+    mix-blend-mode: multiply;
+}
+
+.apparition.follows-mouse {
+    transition: none;
+}
+
 .apparition.video-container {
     overflow: hidden; /* Essencial para conter os efeitos */
     animation: fadeInOutAsymmetric 20s cubic-bezier(0.8, 0, 0.2, 1) forwards;
@@ -115,6 +210,20 @@ body {
     33% { transform: scale(1.12) skewX(-0.5deg); }
     66% { transform: scale(1.08) skewX(0.8deg); }
     100% { transform: scale(1.1) skewX(0deg); }
+}
+
+@keyframes eyeGlow {
+    0% { filter: grayscale(100%) contrast(220%) brightness(45%) drop-shadow(0 0 8px rgba(255,255,255,0.3)); }
+    50% { filter: grayscale(100%) contrast(240%) brightness(55%) drop-shadow(0 0 15px rgba(255,255,255,0.5)); }
+    100% { filter: grayscale(100%) contrast(220%) brightness(45%) drop-shadow(0 0 8px rgba(255,255,255,0.3)); }
+}
+
+@keyframes warpDistortion {
+    0% { transform: scale(1) skewY(0deg); filter: grayscale(100%) contrast(180%) brightness(50%) hue-rotate(180deg); }
+    25% { transform: scale(1.02) skewY(-1deg); filter: grayscale(100%) contrast(190%) brightness(45%) hue-rotate(185deg); }
+    50% { transform: scale(0.98) skewY(1deg); filter: grayscale(100%) contrast(175%) brightness(55%) hue-rotate(175deg); }
+    75% { transform: scale(1.01) skewY(-0.5deg); filter: grayscale(100%) contrast(185%) brightness(48%) hue-rotate(182deg); }
+    100% { transform: scale(1) skewY(0deg); filter: grayscale(100%) contrast(180%) brightness(50%) hue-rotate(180deg); }
 }
 
 /* Glitch Effect */
