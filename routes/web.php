@@ -51,6 +51,7 @@ Route::middleware(['auth', 'check.suspended'])->group(function () {
     Route::patch('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/avatar', [App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
     Route::delete('/profile/avatar', [App\Http\Controllers\ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
+    Route::get('/profile/invites', [App\Http\Controllers\ProfileController::class, 'invites'])->name('profile.invites');
     
     // Invites Management (moved to profile)
     Route::prefix('profile/invites')->name('profile.invites.')->group(function () {

@@ -87,27 +87,30 @@ class VideoMediaService
      */
     private function generateThumbnail(Video $video, array $mediaItems, bool $hasVideo, ?VideoMedia $firstImage): void
     {
+        // Set immediate fallback first (sempre define thumbnail)
+        $firstMedia = $mediaItems[0] ?? null;
+        if ($firstMedia) {
+            $video->update([
+                'thumbnail_url' => $firstMedia->url,
+            ]);
+        }
+
         try {
             if ($hasVideo) {
-                // Use first video to generate thumbnail
+                // Try to generate better thumbnail from video (assíncrono/opcional)
                 $firstVideo = collect($mediaItems)->first(fn($m) => $m->type === 'video');
                 if ($firstVideo) {
                     $this->extractVideoThumbnail($video, $firstVideo);
                 }
             } elseif ($firstImage) {
-                // Use first image as thumbnail
+                // Use first image as thumbnail (já definido acima)
                 $video->update([
                     'thumbnail_url' => $firstImage->url,
                 ]);
             }
         } catch (\Exception $e) {
-            // Fallback: use default or first media URL
-            $firstMedia = $mediaItems[0] ?? null;
-            if ($firstMedia) {
-                $video->update([
-                    'thumbnail_url' => $firstMedia->url,
-                ]);
-            }
+            // Keep the fallback already set
+            \Log::warning('Thumbnail generation failed: ' . $e->getMessage());
         }
     }
 
@@ -121,14 +124,13 @@ class VideoMediaService
             
             // Check if FFmpeg is available
             if (!$this->isFFmpegAvailable()) {
-                // Fallback to video URL if FFmpeg is not available
-                $video->update(['thumbnail_url' => $videoMedia->url]);
-                return;
+                \Log::info('FFmpeg not available, using fallback thumbnail');
+                return; // Keep existing fallback
             }
 
             $ffmpeg = FFMpeg::create([
-                'ffmpeg.binaries'  => 'C:/ffmpeg/bin/ffmpeg.exe', // Adjust path for Windows
-                'ffprobe.binaries' => 'C:/ffmpeg/bin/ffprobe.exe',
+                'ffmpeg.binaries'  => 'C:/Users/Jhenifer/Downloads/ffmpeg/bin/ffmpeg.exe',
+                'ffprobe.binaries' => 'C:/Users/Jhenifer/Downloads/ffmpeg/bin/ffprobe.exe',
             ]);
 
             $videoFile = $ffmpeg->open($videoPath);
@@ -163,6 +165,7 @@ class VideoMediaService
         try {
             // Try common FFmpeg locations on Windows
             $paths = [
+                'C:/Users/Jhenifer/Downloads/ffmpeg/bin/ffmpeg.exe',
                 'C:/ffmpeg/bin/ffmpeg.exe',
                 'C:/Program Files/ffmpeg/bin/ffmpeg.exe',
                 'ffmpeg', // System PATH

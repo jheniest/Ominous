@@ -26,14 +26,13 @@ class ProfileController extends Controller
     public function edit()
     {
         $user = Auth::user();
-        
-        // Get user's invites
-        $invites = $user->createdInvites()
-            ->with('redeemedBy')
-            ->latest()
-            ->get();
 
-        return view('profile.edit', compact('user', 'invites'));
+        return view('profile.edit', compact('user'));
+    }
+
+    public function invites()
+    {
+        return view('profile.invites');
     }
 
     public function update(Request $request)

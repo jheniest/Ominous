@@ -42,9 +42,12 @@
                         </div>
 
                         @if(Auth::id() === $user->id)
-                        <div class="mt-6">
+                        <div class="mt-6 flex gap-3">
                             <a href="{{ route('profile.edit') }}" class="inline-block px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors">
-                                Editar Perfil
+                                ✏️ Editar Perfil
+                            </a>
+                            <a href="{{ route('profile.invites') }}" class="inline-block px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors">
+                                📧 Convites
                             </a>
                         </div>
                         @endif

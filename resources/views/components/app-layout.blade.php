@@ -19,19 +19,20 @@
                         </a>
                     </div>
                     
-                    <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-4 md:gap-6">
                         @auth
-                            <a href="{{ route('videos.index') }}" class="text-neutral-400 hover:text-neutral-200 transition">
+                            <!-- Desktop Navigation -->
+                            <a href="{{ route('videos.index') }}" class="hidden md:block text-neutral-400 hover:text-neutral-200 transition">
                                 Videos
                             </a>
-                            <a href="{{ route('videos.create') }}" class="text-neutral-400 hover:text-neutral-200 transition">
+                            <a href="{{ route('videos.create') }}" class="hidden md:block text-neutral-400 hover:text-neutral-200 transition">
                                 Upload
                             </a>
                             @if(auth()->user()->is_admin)
-                                <a href="{{ route('dashboard') }}" class="text-neutral-400 hover:text-neutral-200 transition">
+                                <a href="{{ route('dashboard') }}" class="hidden md:block text-neutral-400 hover:text-neutral-200 transition">
                                     Dashboard
                                 </a>
-                                <a href="{{ route('admin.dashboard') }}" class="text-red-700 hover:text-red-500 transition">
+                                <a href="{{ route('admin.dashboard') }}" class="hidden md:block text-red-700 hover:text-red-500 transition">
                                     Admin
                                 </a>
                             @endif
@@ -39,6 +40,7 @@
                             <!-- Notification Dropdown -->
                             <x-notification-dropdown />
                             
+                            <!-- Profile Dropdown -->
                             <div class="relative group">
                                 <button class="flex items-center gap-2 text-neutral-400 hover:text-neutral-200 transition">
                                     @if(auth()->user()->avatar)
@@ -48,9 +50,10 @@
                                         {{ substr(auth()->user()->name, 0, 1) }}
                                     </div>
                                     @endif
-                                    <span>{{ auth()->user()->name }}</span>
+                                    <!-- Nome visível apenas no desktop -->
+                                    <span class="hidden md:inline">{{ auth()->user()->name }}</span>
                                     @if(auth()->user()->is_verified)
-                                        <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20" title="Verificado">
+                                        <svg class="hidden md:block w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20" title="Verificado">
                                             <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                         </svg>
                                     @endif
@@ -59,19 +62,39 @@
                                     </svg>
                                 </button>
                                 <div class="absolute right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                    <a href="{{ route('profile.show', auth()->user()) }}" class="block px-4 py-2 text-neutral-300 hover:bg-neutral-800 rounded-t-lg">
-                                        Ver Perfil
+                                    <!-- Mobile Navigation Items -->
+                                    <a href="{{ route('videos.index') }}" class="md:hidden block px-4 py-2 text-neutral-300 hover:bg-neutral-800 border-b border-neutral-800">
+                                        🎬 Videos
+                                    </a>
+                                    <a href="{{ route('videos.create') }}" class="md:hidden block px-4 py-2 text-neutral-300 hover:bg-neutral-800 border-b border-neutral-800">
+                                        📤 Upload
+                                    </a>
+                                    @if(auth()->user()->is_admin)
+                                        <a href="{{ route('dashboard') }}" class="md:hidden block px-4 py-2 text-neutral-300 hover:bg-neutral-800 border-b border-neutral-800">
+                                            📊 Dashboard
+                                        </a>
+                                        <a href="{{ route('admin.dashboard') }}" class="md:hidden block px-4 py-2 text-red-400 hover:bg-neutral-800 border-b border-neutral-800">
+                                            ⚙️ Admin
+                                        </a>
+                                    @endif
+                                    
+                                    <!-- Profile Items (sempre visíveis) -->
+                                    <a href="{{ route('profile.show', auth()->user()) }}" class="block px-4 py-2 text-neutral-300 hover:bg-neutral-800 {{ auth()->user()->is_admin ? '' : 'rounded-t-lg' }}">
+                                        👤 Ver Perfil
                                     </a>
                                     <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-neutral-300 hover:bg-neutral-800">
-                                        Editar Perfil
+                                        ✏️ Editar Perfil
+                                    </a>
+                                    <a href="{{ route('profile.invites') }}" class="block px-4 py-2 text-neutral-300 hover:bg-neutral-800">
+                                        📧 Convites
                                     </a>
                                     <a href="{{ route('videos.my-videos') }}" class="block px-4 py-2 text-neutral-300 hover:bg-neutral-800">
-                                        Meus Vídeos
+                                        🎥 Meus Vídeos
                                     </a>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
                                         <button type="submit" class="w-full text-left px-4 py-2 text-red-400 hover:bg-neutral-800 rounded-b-lg">
-                                            Sair
+                                            🚪 Sair
                                         </button>
                                     </form>
                                 </div>

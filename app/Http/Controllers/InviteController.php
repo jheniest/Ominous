@@ -66,8 +66,23 @@ class InviteController extends Controller
             }
         }
 
-        // Criar convite simples sem parâmetros extras
-        $invite = $this->inviteService->createInvite($user, 1, 365);
+        $validated = $request->validate([
+            'expires_at' => 'nullable|date|after:now',
+            'max_uses' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        // Calculate days until expiration
+        $expirationDays = 365; // Default
+        if (isset($validated['expires_at'])) {
+            $expiresAt = \Carbon\Carbon::parse($validated['expires_at']);
+            $expirationDays = now()->diffInDays($expiresAt, false);
+            if ($expirationDays < 0) $expirationDays = 0;
+        }
+
+        $maxUses = $validated['max_uses'] ?? 1;
+
+        // Create invite
+        $invite = $this->inviteService->createInvite($user, $maxUses, $expirationDays);
 
         return back()->with('success', "Convite {$invite->code} criado com sucesso.");
     }
