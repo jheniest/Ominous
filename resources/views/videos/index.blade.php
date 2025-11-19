@@ -8,7 +8,7 @@
                     <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                     </svg>
-                    Featured Content
+                    Conteúdo em Destaque
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     @foreach($featured as $featuredVideo)
@@ -42,7 +42,7 @@
                                     @endif
                                 </p>
                                 <div class="flex items-center text-xs text-gray-500 mt-2">
-                                    <span>{{ $featuredVideo->views_count }} views</span>
+                                    <span>{{ $featuredVideo->views_count }} visualizações</span>
                                     <span class="mx-2">•</span>
                                     <span>{{ $featuredVideo->created_at->diffForHumans() }}</span>
                                 </div>
@@ -61,30 +61,29 @@
                 <form method="GET" action="{{ route('videos.index') }}" class="flex flex-col md:flex-row gap-4">
                     <!-- Search -->
                     <div class="flex-1">
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search videos..." class="w-full bg-black border border-red-900/50 rounded-lg px-4 py-2 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-500">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar vídeos..." class="w-full bg-black border border-red-900/50 rounded-lg px-4 py-2 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-500">
                     </div>
                     
                     <!-- Category Filter -->
                     <select name="category" class="bg-black border border-red-900/50 rounded-lg px-4 py-2 text-gray-100 focus:outline-none focus:border-red-500">
-                        <option value="all">All Categories</option>
-                        <option value="breaking_news" {{ request('category') == 'breaking_news' ? 'selected' : '' }}>Breaking News</option>
-                        <option value="footage" {{ request('category') == 'footage' ? 'selected' : '' }}>Footage</option>
-                        <option value="investigation" {{ request('category') == 'investigation' ? 'selected' : '' }}>Investigation</option>
-                        <option value="accident" {{ request('category') == 'accident' ? 'selected' : '' }}>Accident</option>
-                        <option value="crime" {{ request('category') == 'crime' ? 'selected' : '' }}>Crime</option>
-                        <option value="natural_disaster" {{ request('category') == 'natural_disaster' ? 'selected' : '' }}>Natural Disaster</option>
-                        <option value="other" {{ request('category') == 'other' ? 'selected' : '' }}>Other</option>
+                        <option value="all">Todas as Categorias</option>
+                        <option value="guerra" {{ request('category') == 'guerra' ? 'selected' : '' }}>Guerra</option>
+                        <option value="terrorismo" {{ request('category') == 'terrorismo' ? 'selected' : '' }}>Terrorismo</option>
+                        <option value="chacina" {{ request('category') == 'chacina' ? 'selected' : '' }}>Chacina</option>
+                        <option value="massacre" {{ request('category') == 'massacre' ? 'selected' : '' }}>Massacre</option>
+                        <option value="suicidio" {{ request('category') == 'suicidio' ? 'selected' : '' }}>Suicídio</option>
+                        <option value="tribunal-do-crime" {{ request('category') == 'tribunal-do-crime' ? 'selected' : '' }}>Tribunal do Crime</option>
                     </select>
                     
                     <!-- Sort -->
                     <select name="sort" class="bg-black border border-red-900/50 rounded-lg px-4 py-2 text-gray-100 focus:outline-none focus:border-red-500">
-                        <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Latest</option>
-                        <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>Most Viewed</option>
-                        <option value="trending" {{ request('sort') == 'trending' ? 'selected' : '' }}>Trending</option>
+                        <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Mais Recentes</option>
+                        <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>Mais Vistos</option>
+                        <option value="trending" {{ request('sort') == 'trending' ? 'selected' : '' }}>Em Alta</option>
                     </select>
                     
                     <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
-                        Filter
+                        Filtrar
                     </button>
                 </form>
             </div>
@@ -122,13 +121,13 @@
                                 @endif
                             </p>
                             <div class="flex items-center justify-between text-xs text-gray-500 mt-2">
-                                <span>{{ $video->views_count }} views</span>
+                                <span>{{ $video->views_count }} visualizações</span>
                                 <span>{{ $video->created_at->diffForHumans() }}</span>
                             </div>
                             <div class="flex items-center gap-2 mt-2">
-                                <span class="text-xs px-2 py-1 bg-red-900/30 text-red-400 rounded">{{ ucfirst(str_replace('_', ' ', $video->category)) }}</span>
+                                <span class="text-xs px-2 py-1 bg-red-900/30 text-red-400 rounded">{{ \App\Helpers\CategoryHelper::getPortugueseName($video->category) }}</span>
                                 @if($video->comments_count > 0)
-                                <span class="text-xs text-gray-500">{{ $video->comments_count }} comments</span>
+                                <span class="text-xs text-gray-500">{{ $video->comments_count }} comentários</span>
                                 @endif
                             </div>
                         </div>
@@ -146,8 +145,8 @@
                 <svg class="w-24 h-24 mx-auto text-red-900 mb-4" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
                 </svg>
-                <p class="text-xl text-gray-500">No videos found</p>
-                <p class="text-gray-600 mt-2">Try adjusting your filters</p>
+                <p class="text-xl text-gray-500">Nenhum vídeo encontrado</p>
+                <p class="text-gray-600 mt-2">Tente ajustar os filtros</p>
             </div>
             @endif
         </div>

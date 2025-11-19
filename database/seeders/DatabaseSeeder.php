@@ -16,9 +16,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin User
+        // Admin Principal
         User::create([
-            'name' => 'Admin',
+            'name' => 'Admin Master',
             'email' => 'admin@atrocidades.com',
             'password' => Hash::make('admin123'),
             'email_verified_at' => now(),
@@ -26,24 +26,44 @@ class DatabaseSeeder extends Seeder
             'is_verified' => true,
         ]);
 
-        // Regular User
+        // Admin Moderador
         User::create([
-            'name' => 'User Test',
-            'email' => 'user@ominous.com',
-            'password' => Hash::make('user123'),
+            'name' => 'Moderador',
+            'email' => 'moderador@atrocidades.com',
+            'password' => Hash::make('mod123'),
             'email_verified_at' => now(),
-            'is_admin' => false,
-            'is_verified' => false,
+            'is_admin' => true,
+            'is_verified' => true,
         ]);
 
-        // Verified User
+        // Admin Editor
         User::create([
-            'name' => 'Verified User',
-            'email' => 'verified@ominous.com',
-            'password' => Hash::make('verified123'),
+            'name' => 'Editor',
+            'email' => 'editor@atrocidades.com',
+            'password' => Hash::make('editor123'),
+            'email_verified_at' => now(),
+            'is_admin' => true,
+            'is_verified' => true,
+        ]);
+
+        // Usuário Teste
+        User::create([
+            'name' => 'Usuário Teste',
+            'email' => 'teste@atrocidades.com',
+            'password' => Hash::make('teste123'),
             'email_verified_at' => now(),
             'is_admin' => false,
             'is_verified' => true,
+        ]);
+
+        // Usuário Regular
+        User::create([
+            'name' => 'João Silva',
+            'email' => 'joao@atrocidades.com',
+            'password' => Hash::make('senha123'),
+            'email_verified_at' => now(),
+            'is_admin' => false,
+            'is_verified' => false,
         ]);
     }
 }

@@ -26,6 +26,15 @@
                         @enderror
                     </div>
 
+                    <!-- Subtitle -->
+                    <div>
+                        <label for="subtitle" class="block text-sm font-semibold text-gray-300 mb-2">Subtítulo</label>
+                        <input type="text" id="subtitle" name="subtitle" value="{{ old('subtitle') }}" maxlength="500" placeholder="Um breve resumo ou linha secundária" class="w-full bg-black border border-red-900/50 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-500 @error('subtitle') border-red-500 @enderror">
+                        @error('subtitle')
+                        <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Description -->
                     <div>
                         <label for="description" class="block text-sm font-semibold text-gray-300 mb-2">Descrição *</label>
@@ -67,13 +76,12 @@
                         <label for="category" class="block text-sm font-semibold text-gray-300 mb-2">Categoria *</label>
                         <select id="category" name="category" required class="w-full bg-black border border-red-900/50 rounded-lg px-4 py-3 text-gray-100 focus:outline-none focus:border-red-500 @error('category') border-red-500 @enderror">
                             <option value="">Selecione uma categoria</option>
-                            <option value="breaking_news" {{ old('category') == 'breaking_news' ? 'selected' : '' }}>Breaking News</option>
-                            <option value="footage" {{ old('category') == 'footage' ? 'selected' : '' }}>Footage</option>
-                            <option value="investigation" {{ old('category') == 'investigation' ? 'selected' : '' }}>Investigation</option>
-                            <option value="accident" {{ old('category') == 'accident' ? 'selected' : '' }}>Accident</option>
-                            <option value="crime" {{ old('category') == 'crime' ? 'selected' : '' }}>Crime</option>
-                            <option value="natural_disaster" {{ old('category') == 'natural_disaster' ? 'selected' : '' }}>Natural Disaster</option>
-                            <option value="other" {{ old('category') == 'other' ? 'selected' : '' }}>Other</option>
+                            <option value="guerra" {{ old('category') == 'guerra' ? 'selected' : '' }}>Guerra</option>
+                            <option value="terrorismo" {{ old('category') == 'terrorismo' ? 'selected' : '' }}>Terrorismo</option>
+                            <option value="chacina" {{ old('category') == 'chacina' ? 'selected' : '' }}>Chacina</option>
+                            <option value="massacre" {{ old('category') == 'massacre' ? 'selected' : '' }}>Massacre</option>
+                            <option value="suicidio" {{ old('category') == 'suicidio' ? 'selected' : '' }}>Suicídio</option>
+                            <option value="tribunal-do-crime" {{ old('category') == 'tribunal-do-crime' ? 'selected' : '' }}>Tribunal do Crime</option>
                         </select>
                         @error('category')
                         <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
@@ -86,6 +94,16 @@
                         <label for="is_nsfw" class="text-sm text-gray-300">
                             Este conteúdo contém material sensível (NSFW)
                         </label>
+                    </div>
+
+                    <!-- Tags -->
+                    <div>
+                        <label for="tags" class="block text-sm font-semibold text-gray-300 mb-2">Tags</label>
+                        <input type="text" id="tags" name="tags" value="{{ old('tags') }}" placeholder="Separe as tags por vírgula (ex: violência, crime, polícia)" class="w-full bg-black border border-red-900/50 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-600 focus:outline-none focus:border-red-500 @error('tags') border-red-500 @enderror">
+                        <p class="text-xs text-gray-500 mt-1">Use vírgulas para separar múltiplas tags</p>
+                        @error('tags')
+                        <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Submit Buttons -->

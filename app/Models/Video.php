@@ -13,6 +13,7 @@ class Video extends Model
     protected $fillable = [
         'user_id',
         'title',
+        'subtitle',
         'description',
         'video_url',
         'thumbnail_url',
@@ -60,6 +61,11 @@ class Video extends Model
     public function media()
     {
         return $this->hasMany(VideoMedia::class)->orderBy('order');
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'video_tag');
     }
 
     public function scopeApproved($query)

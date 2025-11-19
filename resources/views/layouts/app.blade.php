@@ -45,6 +45,33 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Dynamic Category Submenu -->
+            <div class="border-t border-neutral-800/50 bg-neutral-950/60 backdrop-blur-sm">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center gap-3 py-2.5 overflow-x-auto scrollbar-hide">
+                        <span class="text-xs uppercase tracking-wider text-neutral-600 font-semibold whitespace-nowrap">
+                            Hoje:
+                        </span>
+                        @foreach($categoryMenu as $item)
+                        <a href="{{ route('videos.index', ['category' => $item['category']]) }}" 
+                           class="group flex items-center gap-2 px-3 py-1.5 rounded-full transition-all hover:scale-105 whitespace-nowrap"
+                           style="background-color: {{ $item['color'] }}15; border: 1px solid {{ $item['color'] }}30;">
+                            <span class="text-sm font-medium transition-colors group-hover:brightness-110" 
+                                  style="color: {{ $item['color'] }};">
+                                {{ $item['name'] }}
+                            </span>
+                            @if($item['count'] > 0)
+                            <span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold rounded-full transition-all"
+                                  style="background-color: {{ $item['color'] }}; color: #000;">
+                                {{ $item['count'] }}
+                            </span>
+                            @endif
+                        </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
         </nav>
 
         @if(session('success'))

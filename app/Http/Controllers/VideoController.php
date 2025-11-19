@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Video;
+use App\Models\Tag;
 use App\Models\Comment;
 use App\Models\VideoReport;
 use App\Services\VideoMediaService;
@@ -53,10 +54,13 @@ class VideoController extends Controller
 
     public function show(Video $video)
     {
-        $video->load('user', 'approvedBy', 'media');
+        // Increment views
         $video->incrementViews();
 
-        // Get top-level comments with replies
+        // Load relationships
+        $video->load(['user', 'approvedBy', 'media', 'tags']);
+
+        // Get comments with replies
         $comments = $video->comments()
             ->approved()
             ->topLevel()
@@ -84,11 +88,13 @@ class VideoController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'subtitle' => 'nullable|string|max:500',
             'description' => 'required|string|max:5000',
             'media_files' => 'required|array|min:1|max:10',
             'media_files.*' => 'file|mimes:mp4,mov,avi,wmv,jpg,jpeg,png,gif,webp|max:102400', // 100MB per file
-            'category' => 'required|in:breaking_news,footage,investigation,accident,crime,natural_disaster,other',
+            'category' => 'required|in:guerra,terrorismo,chacina,massacre,suicidio,tribunal-do-crime',
             'is_nsfw' => 'boolean',
+            'tags' => 'nullable|string|max:255',
         ]);
 
         // Admin posts are auto-approved
@@ -96,8 +102,9 @@ class VideoController extends Controller
 
         $video = Auth::user()->videos()->create([
             'title' => $validated['title'],
+            'subtitle' => $validated['subtitle'] ?? null,
             'description' => $validated['description'],
-            'video_url' => '', // Will be set by first media
+            'video_url' => null, // Will be set by first media
             'thumbnail_url' => null, // Will be generated
             'category' => $validated['category'],
             'is_nsfw' => $validated['is_nsfw'] ?? false,
@@ -111,11 +118,19 @@ class VideoController extends Controller
         $mediaItems = $mediaService->processMediaFiles($video, $validated['media_files']);
 
         // Set video_url to first media item
-        if (!empty($mediaItems)) {
+        if (!empty($mediaItems) && isset($mediaItems[0]->url)) {
             $video->update(['video_url' => $mediaItems[0]->url]);
+        } else {
+            // Fallback: set to empty string if no media was processed
+            $video->update(['video_url' => '']);
         }
 
-        $message = Auth::user()->is_admin 
+        // Process tags
+        if (!empty($validated['tags'])) {
+            $this->processTags($video, $validated['tags']);
+        }
+
+        $message = Auth::user()->is_admin
             ? 'Conteúdo publicado com sucesso!' 
             : 'Conteúdo enviado para moderação. Você será notificado quando for revisado.';
 
@@ -186,6 +201,8 @@ class VideoController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        $video->load('tags');
+
         return view('videos.edit', compact('video'));
     }
 
@@ -198,19 +215,27 @@ class VideoController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'subtitle' => 'nullable|string|max:500',
             'description' => 'required|string|max:5000',
             'thumbnail_url' => 'nullable|url|max:500',
-            'category' => 'required|in:breaking_news,footage,investigation,accident,crime,natural_disaster,other',
+            'category' => 'required|in:guerra,terrorismo,chacina,massacre,suicidio,tribunal-do-crime',
             'is_nsfw' => 'boolean',
+            'tags' => 'nullable|string|max:255',
         ]);
 
         $video->update([
             'title' => $validated['title'],
+            'subtitle' => $validated['subtitle'] ?? null,
             'description' => $validated['description'],
             'thumbnail_url' => $validated['thumbnail_url'] ?? $video->thumbnail_url,
             'category' => $validated['category'],
             'is_nsfw' => $validated['is_nsfw'] ?? false,
         ]);
+
+        // Process tags
+        if (isset($validated['tags'])) {
+            $this->processTags($video, $validated['tags']);
+        }
 
         return redirect()->route('videos.show', $video)->with('success', 'Vídeo atualizado com sucesso.');
     }
@@ -237,5 +262,43 @@ class VideoController extends Controller
         $video->delete();
 
         return redirect()->route('videos.my-videos')->with('success', 'Conteúdo deletado com sucesso.');
+    }
+
+    /**
+     * Process tags from comma-separated string
+     */
+    private function processTags(Video $video, string $tagsString)
+    {
+        $tagNames = array_map('trim', explode(',', $tagsString));
+        $tagNames = array_filter($tagNames); // Remove empty values
+
+        $tagIds = [];
+        foreach ($tagNames as $tagName) {
+            if (empty($tagName)) continue;
+
+            // Find or create tag
+            $tag = Tag::firstOrCreate(
+                ['name' => $tagName],
+                ['color' => $this->getRandomTagColor()]
+            );
+
+            $tagIds[] = $tag->id;
+        }
+
+        // Sync tags with video
+        $video->tags()->sync($tagIds);
+    }
+
+    /**
+     * Get random color for new tags
+     */
+    private function getRandomTagColor()
+    {
+        $colors = [
+            '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#6366F1', 
+            '#8B5CF6', '#EC4899', '#06B6D4', '#14B8A6', '#F97316'
+        ];
+        
+        return $colors[array_rand($colors)];
     }
 }

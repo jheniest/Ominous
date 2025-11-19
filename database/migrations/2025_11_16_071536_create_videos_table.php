@@ -16,9 +16,9 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
-            $table->string('video_url'); // URL do vídeo (YouTube, arquivo local, etc)
+            $table->string('video_url')->nullable(); // URL do vídeo (YouTube, arquivo local, etc)
             $table->string('thumbnail_url')->nullable();
-            $table->enum('category', ['breaking_news', 'footage', 'investigation', 'accident', 'crime', 'natural_disaster', 'other'])->default('other');
+            $table->enum('category', ['guerra', 'terrorismo', 'chacina', 'massacre', 'suicidio', 'tribunal-do-crime'])->default('guerra');
             $table->enum('status', ['pending', 'approved', 'rejected', 'hidden'])->default('pending');
             $table->text('rejection_reason')->nullable();
             $table->timestamp('approved_at')->nullable();
