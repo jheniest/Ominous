@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login - Ominous</title>
+    <title>Login - Atrocidades</title>
     @vite(['resources/css/app.css', 'resources/css/creepy-background.css', 'resources/js/creepy-background.js'])
 </head>
 <body class="antialiased">
@@ -38,9 +38,11 @@
     </div>
 
     <div class="relative min-h-screen flex items-center justify-center z-10 px-6">
-        <div class="max-w-md w-full">
+        <div class="max-w-md w-full mx-auto">
             <div class="text-center mb-8">
-                <img src="{{ asset('creepy_logo/ominous_logo.png') }}" alt="Ominous" class="mx-auto h-24 logo-glow mb-6">
+                <h1 class="text-5xl md:text-6xl font-bold text-neutral-400 hover:text-red-700 transition mb-6">
+                    ATROCIDADES
+                </h1>
                 <h2 class="text-3xl font-bold text-neutral-200">Bem-vindo de Volta</h2>
                 <p class="mt-2 text-neutral-500">Entre na escuridão</p>
             </div>

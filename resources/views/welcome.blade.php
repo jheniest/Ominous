@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ominous</title>
+    <title>Atrocidades</title>
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/css/creepy-background.css', 'resources/js/creepy-background.js'])
 </head>
 <body class="antialiased">
@@ -37,8 +37,10 @@
     </div>
 
     <div class="relative min-h-screen flex flex-col items-center justify-center z-10 px-6">
-        <div class="text-center space-y-12 max-w-md">
-            <img src="{{ asset('creepy_logo/ominous_logo.png') }}" alt="Ominous" class="mx-auto h-[10rem] logo-glow">
+        <div class="text-center space-y-12 w-full max-w-2xl mx-auto">
+            <h1 class="text-6xl md:text-7xl lg:text-8xl font-bold text-neutral-400 hover:text-red-700 transition">
+                ATROCIDADES
+            </h1>
             
             <p class="text-xl text-neutral-400 font-light tracking-wide">
                 Algo te observa nas sombras.

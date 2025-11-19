@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
         // Admin User
         User::create([
             'name' => 'Admin',
-            'email' => 'admin@ominous.com',
+            'email' => 'admin@atrocidades.com',
             'password' => Hash::make('admin123'),
             'email_verified_at' => now(),
             'is_admin' => true,

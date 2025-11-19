@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Ominous' }}</title>
+    <title>{{ $title ?? 'Atrocidades' }}</title>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @vite(['resources/css/app.css'])
 </head>
@@ -15,7 +15,7 @@
                 <div class="flex justify-between h-16">
                     <div class="flex items-center">
                         <a href="{{ auth()->check() ? route('videos.index') : route('home') }}" class="text-2xl font-bold text-neutral-400 hover:text-red-700 transition">
-                            OMINOUS
+                            ATROCIDADES
                         </a>
                     </div>
                     

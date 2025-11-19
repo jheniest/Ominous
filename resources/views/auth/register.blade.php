@@ -4,7 +4,7 @@
     <div class="min-h-screen flex items-center justify-center px-4 py-12">
         <div class="max-w-md w-full">
             <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-neutral-200">Ingressar no Ominous</h2>
+                <h2 class="text-3xl font-bold text-neutral-200">Ingressar no Atrocidades</h2>
                 <p class="mt-2 text-neutral-500">Convite de: <span class="text-red-700">{{ $invited_by }}</span></p>
             </div>
 
@@ -79,7 +79,7 @@
                             class="mt-1 w-4 h-4 bg-neutral-900 border-neutral-700 rounded text-red-900 focus:ring-red-900/50"
                         >
                         <label for="terms" class="ml-3 text-sm text-neutral-400">
-                            Aceito os termos e condições do Ominous
+                            Aceito os termos e condições do Atrocidades
                         </label>
                     </div>
                     @error('terms')
@@ -87,7 +87,7 @@
                     @enderror
 
                     <button type="submit" class="w-full px-6 py-3 bg-red-950/60 hover:bg-red-900/60 border border-red-900 hover:border-red-700 text-red-400 hover:text-red-300 rounded-lg transition font-medium">
-                        Ingressar no Ominous
+                        Ingressar no Atrocidades
                     </button>
                 </form>
             </div>

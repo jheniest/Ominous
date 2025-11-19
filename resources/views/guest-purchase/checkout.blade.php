@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Checkout - Ominous</title>
+    <title>Checkout - Atrocidades</title>
     @vite(['resources/css/app.css', 'resources/css/creepy-background.css', 'resources/js/creepy-background.js'])
 </head>
 <body class="antialiased">
@@ -17,7 +17,7 @@
         <header class="border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-lg">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
                 <a href="{{ route('home') }}" class="text-2xl font-bold text-neutral-400 hover:text-red-700 transition">
-                    OMINOUS
+                    ATROCIDADES
                 </a>
                 <a href="{{ route('guest.purchase.index') }}" class="px-4 py-2 text-neutral-400 hover:text-neutral-200 transition">
                     ← Voltar
