@@ -78,7 +78,7 @@
                     <div class="flex gap-6">
                         <!-- Thumbnail -->
                         <div class="flex-shrink-0">
-                            <a href="{{ route('videos.show', $video) }}" target="_blank">
+                            <a href="{{ route('news.show', $video) }}" target="_blank">
                                 @if($video->thumbnail_url)
                                 <img src="{{ $video->thumbnail_url }}" alt="{{ $video->title }}" class="w-48 h-32 object-cover rounded-lg border border-red-900/50">
                                 @else
@@ -95,7 +95,7 @@
                         <div class="flex-1">
                             <div class="flex items-start justify-between mb-3">
                                 <div>
-                                    <a href="{{ route('videos.show', $video) }}" target="_blank" class="text-xl font-bold text-white hover:text-red-400 transition-colors">
+                                    <a href="{{ route('news.show', $video) }}" target="_blank" class="text-xl font-bold text-white hover:text-red-400 transition-colors">
                                         {{ $video->title }}
                                     </a>
                                     <p class="text-sm text-gray-400 mt-1">

@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminOnly::class,
             'check.suspended' => \App\Http\Middleware\CheckSuspended::class,
         ]);
+        
+        // Add global middleware
+        $middleware->append(\App\Http\Middleware\UpdateLastSeen::class);
+        $middleware->append(\App\Http\Middleware\CheckMaintenanceMode::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

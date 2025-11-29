@@ -64,7 +64,7 @@
                 @if($videos->count() > 0)
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     @foreach($videos as $video)
-                    <a href="{{ route('videos.show', $video) }}" class="group block">
+                    <a href="{{ route('news.show', $video) }}" class="group block">
                         <div class="bg-gray-900 rounded-lg overflow-hidden border border-red-900/30 hover:border-red-500/50 shadow-lg hover:shadow-red-900/50 transition-all duration-300">
                             @if($video->thumbnail_url)
                             <img src="{{ $video->thumbnail_url }}" alt="{{ $video->title }}" class="w-full h-40 object-cover group-hover:opacity-80 transition-opacity">

@@ -67,7 +67,7 @@
                             @endif
 
                             @if($notification->relatedVideo)
-                            <a href="{{ route('videos.show', $notification->relatedVideo) }}" 
+                            <a href="{{ route('news.show', $notification->relatedVideo) }}" 
                                class="text-red-500 hover:text-red-400 transition flex items-center gap-1">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>

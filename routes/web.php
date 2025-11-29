@@ -7,13 +7,111 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuestPurchaseController;
 use App\Http\Controllers\InviteController;
+use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\SecureMediaController;
 use App\Http\Controllers\VideoController;
 use Illuminate\Support\Facades\Route;
 
+// Maintenance page (always accessible)
+Route::get('/maintenance', function () {
+    return view('maintenance');
+})->name('maintenance');
+
+// Emergency access key validation
+Route::post('/maintenance/validate-key', function (\Illuminate\Http\Request $request) {
+    $request->validate(['key' => 'required|string']);
+    
+    $storedKey = \App\Models\SiteSetting::get('emergency_access_key', '');
+    
+    if (empty($storedKey)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Sistema de acesso de emergência não configurado.'
+        ], 400);
+    }
+    
+    // Use hash comparison to prevent timing attacks
+    if (hash_equals($storedKey, $request->key)) {
+        return response()->json(['success' => true]);
+    }
+    
+    // Log failed attempt
+    \App\Models\ActivityLog::create([
+        'user_id' => null,
+        'action' => 'emergency_key_failed',
+        'description' => 'Tentativa de acesso de emergência com chave inválida',
+        'ip_address' => $request->ip(),
+        'user_agent' => $request->userAgent(),
+    ]);
+    
+    return response()->json([
+        'success' => false,
+        'message' => 'Chave de emergência inválida.'
+    ], 403);
+})->name('maintenance.validate-key');
+
+// Public routes
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+// =================================================================
+// NEWS FEED - PÚBLICO (PayWall apenas nas mídias)
+// =================================================================
+Route::prefix('news')->name('news.')->group(function () {
+    // Feed principal - público
+    Route::get('/', [NewsController::class, 'index'])->name('index');
+    
+    // Pesquisa de notícias - público
+    Route::get('/search', [NewsController::class, 'search'])->name('search');
+    
+    // Feed por categoria - público
+    Route::get('/category/{category}', [NewsController::class, 'category'])->name('category');
+    
+    // Feed por tag - público
+    Route::get('/tag/{slug}', [NewsController::class, 'tag'])->name('tag');
+    
+    // Notícia individual - público (mídia protegida por paywall)
+    Route::get('/{video:slug}', [NewsController::class, 'show'])->name('show');
+});
+
+// =================================================================
+// SECURE MEDIA STREAMING - Proteção contra download
+// =================================================================
+Route::prefix('media')->name('media.')->group(function () {
+    // Gera URL temporária para mídia (requer autenticação para conteúdo sensível)
+    Route::post('/generate-url/{video}', [SecureMediaController::class, 'generateUrl'])
+        ->name('generate-url')
+        ->middleware('throttle:30,1');
+    
+    // Stream de mídia com token (validação interna)
+    Route::get('/stream/{token}/{mediaId}', [SecureMediaController::class, 'stream'])
+        ->name('stream')
+        ->where('mediaId', '[0-9]+');
+    
+    // Thumbnail de mídia
+    Route::get('/thumb/{token}/{mediaId}', [SecureMediaController::class, 'thumbnail'])
+        ->name('thumbnail')
+        ->where('mediaId', '[0-9]+');
+});
+
+// Redirect antigos URLs /videos/* para /news/*
+Route::get('/videos', function () {
+    return redirect()->route('news.index', [], 301);
+});
+
+Route::get('/videos/{video}', function ($video) {
+    // Tentar encontrar por ID ou slug
+    $videoModel = \App\Models\Video::find($video) 
+        ?? \App\Models\Video::where('slug', $video)->first();
+    
+    if ($videoModel) {
+        return redirect()->route('news.show', $videoModel->slug, 301);
+    }
+    
+    return redirect()->route('news.index', [], 301);
+})->where('video', '.*');
 
 // Invite Validation (Public)
 Route::get('/invite', [InviteController::class, 'showValidationForm'])->name('invite.validate');
@@ -42,10 +140,23 @@ Route::middleware('auth')->prefix('dashboard/buy-invite')->name('purchase.')->gr
     Route::post('/{id}/confirm', [PurchaseController::class, 'confirmPayment'])->name('confirm');
 });
 
-// User Dashboard
-Route::middleware(['auth', 'check.suspended'])->group(function () {
+// User Dashboard (Admin Only Now)
+Route::middleware(['auth', 'admin', 'check.suspended'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
+    // Dashboard Settings Toggle (Rate Limited: 10 requests per minute)
+    Route::post('/dashboard/settings/toggle', [DashboardController::class, 'toggleSetting'])
+        ->name('dashboard.settings.toggle')
+        ->middleware('throttle:10,1');
+    
+    // Regenerate Emergency Key (Rate Limited: 5 requests per minute)
+    Route::post('/dashboard/regenerate-key', [DashboardController::class, 'regenerateEmergencyKey'])
+        ->name('dashboard.regenerate-key')
+        ->middleware('throttle:5,1');
+});
+
+// Authenticated User Routes (non-admin)
+Route::middleware(['auth', 'check.suspended'])->group(function () {
     // Profile Routes
     Route::get('/profile/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
@@ -72,27 +183,29 @@ Route::middleware(['auth', 'check.suspended'])->group(function () {
         Route::delete('/', [App\Http\Controllers\NotificationController::class, 'destroyAll'])->name('destroy-all');
     });
     
-    // Video Routes (Authenticated)
-    Route::get('/videos/create', [VideoController::class, 'create'])->name('videos.create');
-    Route::post('/videos', [VideoController::class, 'store'])->name('videos.store');
-    Route::get('/videos/{video}/edit', [VideoController::class, 'edit'])->name('videos.edit');
-    Route::patch('/videos/{video}', [VideoController::class, 'update'])->name('videos.update');
-    Route::delete('/videos/{video}', [VideoController::class, 'destroy'])->name('videos.destroy');
-    Route::post('/videos/{video}/comments', [VideoController::class, 'storeComment'])->name('videos.comments.store');
-    Route::post('/videos/{video}/report', [VideoController::class, 'report'])->name('videos.report');
-    Route::get('/my-videos', [VideoController::class, 'myVideos'])->name('videos.my-videos');
+    // Video Upload/Edit Routes (Authenticated - agora cria notícias)
+    Route::get('/submit', [VideoController::class, 'create'])->name('news.create');
+    Route::post('/submit', [VideoController::class, 'store'])->name('news.store');
+    Route::get('/news/{video:slug}/edit', [VideoController::class, 'edit'])->name('news.edit');
+    Route::patch('/news/{video:slug}', [VideoController::class, 'update'])->name('news.update');
+    Route::delete('/news/{video:slug}', [VideoController::class, 'destroy'])->name('news.destroy');
+    Route::post('/news/{video:slug}/comments', [VideoController::class, 'storeComment'])->name('news.comments.store');
+    Route::delete('/news/comments/{comment}', [VideoController::class, 'destroyComment'])->name('news.comments.destroy');
+    Route::post('/news/{video:slug}/report', [VideoController::class, 'report'])->name('news.report');
+    Route::get('/my-submissions', [VideoController::class, 'myVideos'])->name('news.my-submissions');
 });
 
-// Public Routes (Videos require auth)
+// Public Routes (Profile é público)
 Route::get('/profile/{user}', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
-Route::middleware(['auth', 'check.suspended'])->group(function () {
-    Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
-    Route::get('/videos/{video}', [VideoController::class, 'show'])->name('videos.show');
-});
 
 // Admin Routes
 Route::middleware(['auth', 'admin', 'check.suspended'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+    
+    // Settings Toggle (Rate Limited: 10 requests per minute)
+    Route::post('/settings/toggle', [AdminDashboardController::class, 'toggleSetting'])
+        ->name('settings.toggle')
+        ->middleware('throttle:10,1');
     
     Route::get('/users', [AdminDashboardController::class, 'users'])->name('users.index');
     Route::get('/users/{id}', [AdminDashboardController::class, 'userShow'])->name('users.show');

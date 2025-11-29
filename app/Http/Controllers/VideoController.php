@@ -6,6 +6,7 @@ use App\Models\Video;
 use App\Models\Tag;
 use App\Models\Comment;
 use App\Models\VideoReport;
+use App\Models\SiteSetting;
 use App\Services\VideoMediaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,79 +14,51 @@ use Illuminate\Support\Facades\Storage;
 
 class VideoController extends Controller
 {
-    public function index(Request $request)
-    {
-        $query = Video::approved()
-            ->with('user')
-            ->withCount(['comments', 'reports']);
-
-        // Category filter
-        if ($request->has('category') && $request->category !== 'all') {
-            $query->where('category', $request->category);
-        }
-
-        // Search
-        if ($request->has('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        // Sort
-        $sort = $request->get('sort', 'latest');
-        switch ($sort) {
-            case 'popular':
-                $query->orderBy('views_count', 'desc');
-                break;
-            case 'trending':
-                $query->where('created_at', '>=', now()->subDays(7))
-                      ->orderBy('views_count', 'desc');
-                break;
-            default:
-                $query->latest();
-        }
-
-        $videos = $query->paginate(12);
-        $featured = Video::featured()->approved()->with('user')->take(3)->get();
-
-        return view('videos.index', compact('videos', 'featured'));
-    }
-
-    public function show(Video $video)
-    {
-        // Increment views
-        $video->incrementViews();
-
-        // Load relationships
-        $video->load(['user', 'approvedBy', 'media', 'tags']);
-
-        // Get comments with replies
-        $comments = $video->comments()
-            ->approved()
-            ->topLevel()
-            ->with(['user', 'replies.user'])
-            ->latest()
-            ->paginate(20);
-
-        // Related videos (same category)
-        $related = Video::approved()
-            ->where('category', $video->category)
-            ->where('id', '!=', $video->id)
-            ->with('user')
-            ->take(6)
-            ->get();
-
-        return view('videos.show', compact('video', 'comments', 'related'));
-    }
-
     public function create()
     {
-        return view('videos.create');
+        // Security Check 1: Verify authenticated user
+        if (!Auth::check()) {
+            abort(401, 'Não autenticado');
+        }
+
+        // Security Check 2: Check if user is suspended
+        if (Auth::user()->is_suspended) {
+            abort(403, 'Sua conta está suspensa');
+        }
+
+        // Security Check 3: Check if public uploads are enabled (cached)
+        $publicUploadsEnabled = \Cache::remember('public_uploads_status', 300, function () {
+            return SiteSetting::get('public_uploads_enabled', true);
+        });
+
+        if (!$publicUploadsEnabled && !Auth::user()->is_admin) {
+            abort(403, 'Uploads públicos estão temporariamente desabilitados. Apenas administradores podem fazer upload.');
+        }
+
+        return view('news.create');
     }
 
     public function store(Request $request)
     {
+        // Security Check 1: Verify authenticated user
+        if (!Auth::check()) {
+            abort(401, 'Não autenticado');
+        }
+
+        // Security Check 2: Check if user is suspended
+        if (Auth::user()->is_suspended) {
+            abort(403, 'Sua conta está suspensa');
+        }
+
+        // Security Check 3: Check if public uploads are enabled (cached)
+        $publicUploadsEnabled = \Cache::remember('public_uploads_status', 300, function () {
+            return SiteSetting::get('public_uploads_enabled', true);
+        });
+
+        if (!$publicUploadsEnabled && !Auth::user()->is_admin) {
+            return back()->with('error', 'Uploads públicos estão temporariamente desabilitados. Apenas administradores podem fazer upload.');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:500',
@@ -134,7 +107,7 @@ class VideoController extends Controller
             ? 'Conteúdo publicado com sucesso!' 
             : 'Conteúdo enviado para moderação. Você será notificado quando for revisado.';
 
-        return redirect()->route('videos.my-videos')->with('success', $message);
+        return redirect()->route('news.my-submissions')->with('success', $message);
     }
 
     public function storeComment(Request $request, Video $video)
@@ -154,7 +127,21 @@ class VideoController extends Controller
             'status' => $status,
         ]);
 
-        return back()->with('success', 'Comment posted successfully.');
+        return back()->with('success', 'Comentário publicado com sucesso.');
+    }
+
+    public function destroyComment(Comment $comment)
+    {
+        // Only comment owner or admin can delete
+        if ($comment->user_id !== Auth::id() && !Auth::user()->is_admin) {
+            abort(403, 'Ação não autorizada.');
+        }
+
+        // Delete all replies too
+        $comment->replies()->delete();
+        $comment->delete();
+
+        return back()->with('success', 'Comentário excluído com sucesso.');
     }
 
     public function report(Request $request, Video $video)
@@ -191,7 +178,7 @@ class VideoController extends Controller
             ->latest()
             ->paginate(12);
 
-        return view('videos.my-videos', compact('videos'));
+        return view('news.my-submissions', compact('videos'));
     }
 
     public function edit(Video $video)
@@ -203,7 +190,7 @@ class VideoController extends Controller
 
         $video->load('tags');
 
-        return view('videos.edit', compact('video'));
+        return view('news.edit', compact('video'));
     }
 
     public function update(Request $request, Video $video)
@@ -237,7 +224,7 @@ class VideoController extends Controller
             $this->processTags($video, $validated['tags']);
         }
 
-        return redirect()->route('videos.show', $video)->with('success', 'Vídeo atualizado com sucesso.');
+        return redirect()->route('news.show', $video)->with('success', 'Vídeo atualizado com sucesso.');
     }
 
     public function destroy(Video $video)
@@ -261,7 +248,7 @@ class VideoController extends Controller
 
         $video->delete();
 
-        return redirect()->route('videos.my-videos')->with('success', 'Conteúdo deletado com sucesso.');
+        return redirect()->route('news.my-submissions')->with('success', 'Conteúdo deletado com sucesso.');
     }
 
     /**

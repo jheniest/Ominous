@@ -27,6 +27,7 @@ class User extends Authenticatable
         'invited_by_user_id',
         'invite_code_used',
         'invited_at',
+        'last_seen_at',
         'is_admin',
         'is_verified',
         'is_suspended',
@@ -53,6 +54,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'invited_at' => 'datetime',
+            'last_seen_at' => 'datetime',
             'suspended_at' => 'datetime',
             'password' => 'hashed',
             'is_verified' => 'boolean',

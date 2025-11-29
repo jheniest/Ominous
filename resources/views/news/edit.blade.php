@@ -2,9 +2,9 @@
     <div class="min-h-screen bg-black text-gray-100 py-12">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-gray-900 rounded-lg border-2 border-red-900/50 shadow-2xl shadow-red-900/30 p-8">
-                <h1 class="text-3xl font-bold text-red-500 mb-6">Editar Vídeo</h1>
+                <h1 class="text-3xl font-bold text-red-500 mb-6">Editar Publicação</h1>
 
-                <form method="POST" action="{{ route('videos.update', $video) }}" class="space-y-6">
+                <form method="POST" action="{{ route('news.update', $video) }}" class="space-y-6">
                     @csrf
                     @method('PATCH')
 
@@ -35,11 +35,17 @@
                         @enderror
                     </div>
 
-                    <!-- Video URL (read-only) -->
+                    <!-- Media Info (read-only) -->
                     <div>
-                        <label for="video_url" class="block text-sm font-semibold text-gray-300 mb-2">URL do Vídeo</label>
-                        <input type="text" id="video_url" value="{{ $video->video_url }}" readonly class="w-full bg-gray-800 border border-red-900/50 rounded-lg px-4 py-3 text-gray-400 cursor-not-allowed">
-                        <p class="text-gray-500 text-xs mt-1">O vídeo não pode ser alterado após o upload</p>
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">Mídia</label>
+                        <div class="bg-gray-800 border border-red-900/50 rounded-lg px-4 py-3 text-gray-400">
+                            @if($video->media && $video->media->count() > 0)
+                                {{ $video->media->count() }} arquivo(s) de mídia
+                            @else
+                                Nenhuma mídia
+                            @endif
+                        </div>
+                        <p class="text-gray-500 text-xs mt-1">A mídia não pode ser alterada após o upload</p>
                     </div>
 
                     <!-- Thumbnail URL -->
@@ -72,7 +78,7 @@
                         <input type="checkbox" id="is_nsfw" name="is_nsfw" value="1" {{ old('is_nsfw', $video->is_nsfw) ? 'checked' : '' }} class="mt-1 w-4 h-4 bg-black border-red-900/50 rounded text-red-600 focus:ring-red-500">
                         <label for="is_nsfw" class="ml-3">
                             <span class="block text-sm font-semibold text-gray-300">Marcar como NSFW</span>
-                            <span class="block text-xs text-gray-500">Marque se o vídeo contém conteúdo gráfico ou sensível</span>
+                            <span class="block text-xs text-gray-500">Marque se o conteúdo é gráfico ou sensível</span>
                         </label>
                     </div>
 
@@ -91,7 +97,7 @@
                         <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-bold text-lg transition-colors shadow-lg shadow-red-900/50">
                             Salvar Alterações
                         </button>
-                        <a href="{{ route('videos.show', $video) }}" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors">
+                        <a href="{{ route('news.show', $video) }}" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors">
                             Cancelar
                         </a>
                     </div>

@@ -4,13 +4,17 @@
             <div class="bg-gray-900 rounded-lg border-2 border-red-900/50 shadow-2xl shadow-red-900/30 p-8">
                 <h1 class="text-3xl font-bold text-red-500 mb-6">Enviar Conteúdo</h1>
                 
+                @auth
+                @if(!Auth::user()->is_admin)
                 <div class="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6">
                     <p class="text-red-300 text-sm">
                         <strong>Atenção:</strong> Todo conteúdo está sujeito a moderação. Seu envio será revisado antes de aparecer publicamente.
                     </p>
                 </div>
+                @endif
+                @endauth
 
-                <form method="POST" action="{{ route('videos.store') }}" enctype="multipart/form-data" class="space-y-6" id="uploadForm">
+                <form method="POST" action="{{ route('news.store') }}" enctype="multipart/form-data" class="space-y-6" id="uploadForm">
                     @csrf
 
                     <!-- Title -->
@@ -18,6 +22,15 @@
                         <label for="title" class="block text-sm font-semibold text-gray-300 mb-2">Título *</label>
                         <input type="text" id="title" name="title" value="{{ old('title') }}" required maxlength="255" class="w-full bg-black border border-red-900/50 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-500 @error('title') border-red-500 @enderror">
                         @error('title')
+                        <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Subtitle -->
+                    <div>
+                        <label for="subtitle" class="block text-sm font-semibold text-gray-300 mb-2">Subtítulo</label>
+                        <input type="text" id="subtitle" name="subtitle" value="{{ old('subtitle') }}" maxlength="500" placeholder="Um breve resumo ou linha secundária" class="w-full bg-black border border-red-900/50 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-500 @error('subtitle') border-red-500 @enderror">
+                        @error('subtitle')
                         <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -63,13 +76,12 @@
                         <label for="category" class="block text-sm font-semibold text-gray-300 mb-2">Categoria *</label>
                         <select id="category" name="category" required class="w-full bg-black border border-red-900/50 rounded-lg px-4 py-3 text-gray-100 focus:outline-none focus:border-red-500 @error('category') border-red-500 @enderror">
                             <option value="">Selecione uma categoria</option>
-                            <option value="breaking_news" {{ old('category') == 'breaking_news' ? 'selected' : '' }}>Breaking News</option>
-                            <option value="footage" {{ old('category') == 'footage' ? 'selected' : '' }}>Footage</option>
-                            <option value="investigation" {{ old('category') == 'investigation' ? 'selected' : '' }}>Investigation</option>
-                            <option value="accident" {{ old('category') == 'accident' ? 'selected' : '' }}>Accident</option>
-                            <option value="crime" {{ old('category') == 'crime' ? 'selected' : '' }}>Crime</option>
-                            <option value="natural_disaster" {{ old('category') == 'natural_disaster' ? 'selected' : '' }}>Natural Disaster</option>
-                            <option value="other" {{ old('category') == 'other' ? 'selected' : '' }}>Other</option>
+                            <option value="guerra" {{ old('category') == 'guerra' ? 'selected' : '' }}>Guerra</option>
+                            <option value="terrorismo" {{ old('category') == 'terrorismo' ? 'selected' : '' }}>Terrorismo</option>
+                            <option value="chacina" {{ old('category') == 'chacina' ? 'selected' : '' }}>Chacina</option>
+                            <option value="massacre" {{ old('category') == 'massacre' ? 'selected' : '' }}>Massacre</option>
+                            <option value="suicidio" {{ old('category') == 'suicidio' ? 'selected' : '' }}>Suicídio</option>
+                            <option value="tribunal-do-crime" {{ old('category') == 'tribunal-do-crime' ? 'selected' : '' }}>Tribunal do Crime</option>
                         </select>
                         @error('category')
                         <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
@@ -84,12 +96,29 @@
                         </label>
                     </div>
 
+                    <!-- Tags -->
+                    <div>
+                        <label for="tags" class="block text-sm font-semibold text-gray-300 mb-2">Tags</label>
+                        <input type="text" id="tags" name="tags" value="{{ old('tags') }}" placeholder="Separe as tags por vírgula (ex: violência, crime, polícia)" class="w-full bg-black border border-red-900/50 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-600 focus:outline-none focus:border-red-500 @error('tags') border-red-500 @enderror">
+                        <p class="text-xs text-gray-500 mt-1">Use vírgulas para separar múltiplas tags</p>
+                        @error('tags')
+                        <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Submit Buttons -->
                     <div class="flex gap-4 pt-4">
-                        <button type="submit" class="flex-1 px-6 py-4 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-lg transition-colors shadow-lg shadow-red-900/50">
-                            📤 Enviar para Moderação
+                        <button type="submit" id="submitBtn" class="flex-1 px-6 py-4 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg font-bold text-lg transition-colors shadow-lg shadow-red-900/50">
+                            <span id="submitText">📤 @auth{{ Auth::user()->is_admin ? 'Enviar' : 'Enviar para Moderação' }}@endauth</span>
+                            <span id="loadingText" class="hidden">
+                                <svg class="inline w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Processando arquivos...
+                            </span>
                         </button>
-                        <a href="{{ route('videos.my-videos') }}" class="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors">
+                        <a href="{{ route('news.my-submissions') }}" class="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors">
                             Cancelar
                         </a>
                     </div>
@@ -100,6 +129,23 @@
 
     <script>
         let selectedFiles = [];
+
+        // Form submit loading state
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const loadingText = document.getElementById('loadingText');
+            
+            // Prevent double submit
+            if (submitBtn.disabled) {
+                e.preventDefault();
+                return false;
+            }
+            
+            submitBtn.disabled = true;
+            submitText.classList.add('hidden');
+            loadingText.classList.remove('hidden');
+        });
 
         function handleFileSelect(event) {
             const files = Array.from(event.target.files);

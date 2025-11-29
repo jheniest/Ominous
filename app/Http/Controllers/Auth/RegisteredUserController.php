@@ -71,6 +71,6 @@ class RegisteredUserController extends Controller
 
         $request->session()->forget('validated_invite_code');
 
-        return redirect()->route('videos.index')->with('success', 'Bem-vindo ao Ominous! Sua conta foi criada com sucesso.');
+        return redirect()->route('news.index')->with('success', 'Bem-vindo ao Atrocidades! Sua conta foi criada com sucesso.');
     }
 }

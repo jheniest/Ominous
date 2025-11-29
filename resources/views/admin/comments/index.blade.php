@@ -73,7 +73,7 @@
                                     <span class="font-semibold text-white">{{ $comment->user->name }}</span>
                                     <span class="text-xs text-gray-500">{{ $comment->created_at->diffForHumans() }}</span>
                                 </div>
-                                <a href="{{ route('videos.show', $comment->video) }}" target="_blank" class="text-sm text-gray-400 hover:text-red-400 transition-colors">
+                                <a href="{{ route('news.show', $comment->video) }}" target="_blank" class="text-sm text-gray-400 hover:text-red-400 transition-colors">
                                     on "{{ Str::limit($comment->video->title, 60) }}"
                                 </a>
                             </div>
@@ -129,7 +129,7 @@
                             </button>
                         </form>
 
-                        <a href="{{ route('videos.show', $comment->video) }}" target="_blank" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-semibold transition-colors">
+                        <a href="{{ route('news.show', $comment->video) }}" target="_blank" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-semibold transition-colors">
                             View Video
                         </a>
                     </div>

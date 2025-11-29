@@ -1,174 +1,340 @@
 <x-app-layout>
-    <x-slot name="title">Admin Dashboard</x-slot>
+    <x-slot name="title">Admin Dashboard - Atrocidades</x-slot>
 
-    <div class="py-12">
+    <div class="min-h-screen bg-black text-gray-100 py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Header -->
             <div class="mb-8">
-                <h1 class="text-3xl font-bold text-red-500">Admin Dashboard</h1>
-                <p class="mt-1 text-neutral-500">Painel de controle administrativo</p>
+                <h1 class="text-4xl font-bold text-red-500 mb-2">⚡ Admin Dashboard</h1>
+                <p class="text-gray-400">Sistema de controle e monitoramento</p>
+            </div>
+
+            <!-- Site Controls -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Public Uploads Toggle -->
+                <div class="bg-gray-900 border border-red-900/30 rounded-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-white mb-1">🔒 Controle de Uploads</h3>
+                            <p class="text-sm text-gray-400 mb-3">
+                                @if($siteSettings['public_uploads_enabled'])
+                                    Usuários podem fazer upload normalmente
+                                @else
+                                    <span class="text-red-400">Apenas admins podem fazer upload</span>
+                                @endif
+                            </p>
+                        </div>
+                        <button 
+                            onclick="toggleSetting('public_uploads_enabled', {{ $siteSettings['public_uploads_enabled'] ? 'false' : 'true' }})"
+                            class="relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900 {{ $siteSettings['public_uploads_enabled'] ? 'bg-green-600' : 'bg-gray-600' }}"
+                            id="toggle-public-uploads">
+                            <span class="inline-block h-6 w-6 transform rounded-full bg-white transition-transform {{ $siteSettings['public_uploads_enabled'] ? 'translate-x-7' : 'translate-x-1' }}"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Maintenance Mode Toggle -->
+                <div class="bg-gray-900 border border-red-900/30 rounded-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-white mb-1">🛠️ Modo Manutenção</h3>
+                            <p class="text-sm text-gray-400 mb-3">
+                                @if($siteSettings['maintenance_mode'])
+                                    <span class="text-orange-400">Site em manutenção (admins podem acessar)</span>
+                                @else
+                                    Site público e operacional
+                                @endif
+                            </p>
+                        </div>
+                        <button 
+                            onclick="toggleSetting('maintenance_mode', {{ $siteSettings['maintenance_mode'] ? 'false' : 'true' }})"
+                            class="relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900 {{ $siteSettings['maintenance_mode'] ? 'bg-orange-600' : 'bg-gray-600' }}"
+                            id="toggle-maintenance">
+                            <span class="inline-block h-6 w-6 transform rounded-full bg-white transition-transform {{ $siteSettings['maintenance_mode'] ? 'translate-x-7' : 'translate-x-1' }}"></span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="bg-neutral-950/60 backdrop-blur-lg border border-neutral-800 rounded-lg p-6">
-                    <div class="text-sm font-medium text-neutral-500">Total de Usuários</div>
-                    <div class="mt-2 text-3xl font-bold text-neutral-200">{{ $stats['total_users'] }}</div>
-                </div>
-
-                <div class="bg-neutral-950/60 backdrop-blur-lg border border-green-900/30 rounded-lg p-6">
-                    <div class="text-sm font-medium text-neutral-500">Usuários Ativos</div>
-                    <div class="mt-2 text-3xl font-bold text-green-500">{{ $stats['active_users'] }}</div>
-                </div>
-
-                <div class="bg-neutral-950/60 backdrop-blur-lg border border-neutral-800 rounded-lg p-6">
-                    <div class="text-sm font-medium text-neutral-500">Total de Convites</div>
-                    <div class="mt-2 text-3xl font-bold text-neutral-200">{{ $stats['total_invites'] }}</div>
-                </div>
-
-                <div class="bg-neutral-950/60 backdrop-blur-lg border border-cyan-900/30 rounded-lg p-6">
-                    <div class="text-sm font-medium text-neutral-500">Receita Total</div>
-                    <div class="mt-2 text-3xl font-bold text-cyan-400">R$ {{ number_format($stats['total_revenue'], 2, ',', '.') }}</div>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 p-4 bg-neutral-950/60 backdrop-blur-lg border border-neutral-800 rounded-lg hover:border-red-900/40 transition">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                <!-- Users Stats -->
+                <div class="bg-gray-900 border border-red-900/30 rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-semibold text-gray-400">Usuários</h3>
+                        <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
                         </svg>
                     </div>
-                    <div>
-                        <div class="text-neutral-200 font-medium">Usuários</div>
-                        <div class="text-xs text-neutral-600">Gerenciar usuários</div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400 text-sm">Total</span>
+                            <span class="text-white font-bold text-lg">{{ number_format($stats['total_users']) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-green-400 text-sm">⚪ Online</span>
+                            <span class="text-green-400 font-bold">{{ number_format($stats['online_users']) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-red-400 text-sm">🔴 Banidos</span>
+                            <span class="text-red-400 font-bold">{{ number_format($stats['suspended_users']) }}</span>
+                        </div>
                     </div>
-                </a>
+                </div>
 
-                <a href="{{ route('admin.invites.index') }}" class="flex items-center gap-3 p-4 bg-neutral-950/60 backdrop-blur-lg border border-neutral-800 rounded-lg hover:border-red-900/40 transition">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-neutral-200 font-medium">Convites</div>
-                        <div class="text-xs text-neutral-600">Gerenciar convites</div>
-                    </div>
-                </a>
-
-                <a href="{{ route('admin.videos.index') }}" class="flex items-center gap-3 p-4 bg-neutral-950/60 backdrop-blur-lg border border-yellow-900/30 rounded-lg hover:border-yellow-700/50 transition">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                <!-- Video Stats -->
+                <div class="bg-gray-900 border border-red-900/30 rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-semibold text-gray-400">Vídeos</h3>
+                        <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
                         </svg>
                     </div>
-                    <div>
-                        <div class="text-neutral-200 font-medium">Vídeos</div>
-                        <div class="text-xs text-neutral-600">Moderar vídeos</div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400 text-sm">Total</span>
+                            <span class="text-white font-bold text-lg">{{ number_format($videoStats['total_videos']) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-yellow-400 text-sm">⏳ Pendentes</span>
+                            <span class="text-yellow-400 font-bold">{{ number_format($videoStats['pending_videos']) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-blue-400 text-sm">📅 Hoje</span>
+                            <span class="text-blue-400 font-bold">{{ number_format($videoStats['videos_today']) }}</span>
+                        </div>
                     </div>
-                </a>
+                </div>
 
-                <a href="{{ route('admin.reports.index') }}" class="flex items-center gap-3 p-4 bg-neutral-950/60 backdrop-blur-lg border border-red-900/30 rounded-lg hover:border-red-700/50 transition">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                <!-- Reports Stats -->
+                <div class="bg-gray-900 border border-red-900/30 rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-semibold text-gray-400">Denúncias</h3>
+                        <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clip-rule="evenodd"/>
                         </svg>
                     </div>
-                    <div>
-                        <div class="text-neutral-200 font-medium">Denúncias</div>
-                        <div class="text-xs text-neutral-600">Ver reportes</div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400 text-sm">Total</span>
+                            <span class="text-white font-bold text-lg">{{ number_format($reportStats['total_reports']) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-orange-400 text-sm">🚨 Pendentes</span>
+                            <span class="text-orange-400 font-bold">{{ number_format($reportStats['pending_reports']) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-purple-400 text-sm">📅 Hoje</span>
+                            <span class="text-purple-400 font-bold">{{ number_format($reportStats['reports_today']) }}</span>
+                        </div>
                     </div>
-                </a>
+                </div>
 
-                <a href="{{ route('admin.purchases') }}" class="flex items-center gap-3 p-4 bg-neutral-950/60 backdrop-blur-lg border border-neutral-800 rounded-lg hover:border-red-900/40 transition">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                        </svg>
+                <!-- Quick Links -->
+                <div class="bg-gray-900 border border-red-900/30 rounded-lg p-6">
+                    <h3 class="text-sm font-semibold text-gray-400 mb-4">Ações Rápidas</h3>
+                    <div class="space-y-2">
+                        <a href="{{ route('admin.videos.index') }}" class="block px-3 py-2 bg-red-900/30 hover:bg-red-900/50 rounded text-sm text-red-400 transition">
+                            📹 Moderar Vídeos
+                        </a>
+                        <a href="{{ route('admin.users.index') }}" class="block px-3 py-2 bg-red-900/30 hover:bg-red-900/50 rounded text-sm text-red-400 transition">
+                            👥 Gerenciar Usuários
+                        </a>
+                        <a href="{{ route('admin.activity') }}" class="block px-3 py-2 bg-red-900/30 hover:bg-red-900/50 rounded text-sm text-red-400 transition">
+                            📊 Logs de Atividade
+                        </a>
                     </div>
-                    <div>
-                        <div class="text-neutral-200 font-medium">Compras</div>
-                        <div class="text-xs text-neutral-600">Ver transações</div>
-                    </div>
-                </a>
-
-                <a href="{{ route('admin.comments.index') }}" class="flex items-center gap-3 p-4 bg-neutral-950/60 backdrop-blur-lg border border-neutral-800 rounded-lg hover:border-red-900/40 transition">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-neutral-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path fill-rule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-neutral-200 font-medium">Comentários</div>
-                        <div class="text-xs text-neutral-600">Moderar comentários</div>
-                    </div>
-                </a>
-
-                <a href="{{ route('admin.activity') }}" class="flex items-center gap-3 p-4 bg-neutral-950/60 backdrop-blur-lg border border-neutral-800 rounded-lg hover:border-red-900/40 transition">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-neutral-200 font-medium">Atividades</div>
-                        <div class="text-xs text-neutral-600">Log de ações</div>
-                    </div>
-                </a>
-
-                <a href="{{ route('videos.index') }}" class="flex items-center gap-3 p-4 bg-neutral-950/60 backdrop-blur-lg border border-cyan-900/30 rounded-lg hover:border-cyan-700/50 transition">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-neutral-200 font-medium">Ver Rede</div>
-                        <div class="text-xs text-neutral-600">Acessar rede pública</div>
-                    </div>
-                </a>
+                </div>
             </div>
 
-            <!-- Recent Activity -->
-            <div class="bg-neutral-950/60 backdrop-blur-lg border border-neutral-800 rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-neutral-200 mb-4">Atividade Recente</h3>
-                
-                @if($recentActivity->isEmpty())
-                    <p class="text-neutral-500 text-sm">Nenhuma atividade registrada.</p>
-                @else
-                    <div class="space-y-3">
-                        @foreach($recentActivity as $activity)
-                            <div class="flex items-start gap-3 p-3 bg-neutral-900/50 rounded border border-neutral-800">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center">
-                                    @if($activity->type === 'user_registered')
-                                        <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z"></path>
-                                        </svg>
-                                    @elseif($activity->type === 'invite_created')
-                                        <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
-                                        </svg>
-                                    @elseif($activity->type === 'purchase_completed')
-                                        <svg class="w-4 h-4 text-cyan-500" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
-                                        </svg>
-                                    @else
-                                        <svg class="w-4 h-4 text-neutral-500" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-                                        </svg>
-                                    @endif
+            <!-- Reports Breakdown -->
+            @if(!empty($reportsByReason))
+            <div class="bg-gray-900 border border-red-900/30 rounded-lg p-6 mb-8">
+                <h3 class="text-lg font-bold text-white mb-4">📊 Denúncias por Tipo (Pendentes)</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    @foreach($reportsByReason as $reason => $count)
+                    <div class="bg-black/50 rounded-lg p-4 border border-red-900/20">
+                        <div class="text-xs text-gray-500 uppercase mb-1">{{ ucfirst(str_replace('_', ' ', $reason)) }}</div>
+                        <div class="text-2xl font-bold text-red-400">{{ $count }}</div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            <!-- Recent Pending Reports -->
+            @if($recentReports->count() > 0)
+            <div class="bg-gray-900 border border-red-900/30 rounded-lg p-6 mb-8">
+                <h3 class="text-lg font-bold text-white mb-4">🚨 Denúncias Recentes (Pendentes)</h3>
+                <div class="space-y-3">
+                    @foreach($recentReports as $report)
+                    <div class="bg-black/50 rounded-lg p-4 border border-red-900/20 hover:border-red-700/50 transition">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="px-2 py-1 bg-red-900/50 text-red-400 rounded text-xs font-bold">
+                                        {{ ucfirst(str_replace('_', ' ', $report->reason)) }}
+                                    </span>
+                                    <span class="text-xs text-gray-500">{{ $report->created_at->diffForHumans() }}</span>
                                 </div>
-                                <div class="flex-1">
-                                    <div class="text-neutral-300 text-sm">{{ $activity->description }}</div>
-                                    <div class="text-xs text-neutral-600 mt-1">{{ $activity->created_at->diffForHumans() }}</div>
+                                <div class="text-sm text-white mb-1">
+                                    Vídeo: <a href="{{ route('news.show', $report->video) }}" class="text-red-400 hover:underline">{{ $report->video->title }}</a>
+                                </div>
+                                @if($report->description)
+                                <p class="text-sm text-gray-400">{{ Str::limit($report->description, 100) }}</p>
+                                @endif
+                                <div class="text-xs text-gray-500 mt-2">
+                                    Por: {{ $report->reporter->name ?? 'Anônimo' }}
                                 </div>
                             </div>
-                        @endforeach
+                            <a href="{{ route('admin.videos.show', $report->video) }}" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition whitespace-nowrap">
+                                Revisar
+                            </a>
+                        </div>
                     </div>
-                @endif
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            <!-- Recent Pending Videos -->
+            @if($recentVideos->count() > 0)
+            <div class="bg-gray-900 border border-red-900/30 rounded-lg p-6 mb-8">
+                <h3 class="text-lg font-bold text-white mb-4">⏳ Vídeos Aguardando Aprovação</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach($recentVideos as $video)
+                    <div class="bg-black/50 rounded-lg overflow-hidden border border-red-900/20 hover:border-red-700/50 transition">
+                        <div class="aspect-video bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
+                            @if($video->thumbnail_url)
+                            <img src="{{ $video->thumbnail_url }}" alt="{{ $video->title }}" class="w-full h-full object-cover">
+                            @else
+                            <svg class="w-12 h-12 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
+                            </svg>
+                            @endif
+                        </div>
+                        <div class="p-4">
+                            <h4 class="text-sm font-semibold text-white mb-2 line-clamp-2">{{ $video->title }}</h4>
+                            <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                                <span>{{ $video->user->name }}</span>
+                                <span>{{ $video->created_at->diffForHumans() }}</span>
+                            </div>
+                            <a href="{{ route('admin.videos.show', $video) }}" class="block w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm text-center transition">
+                                Moderar
+                            </a>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            <!-- Recent Activity -->
+            <div class="bg-gray-900 border border-red-900/30 rounded-lg p-6">
+                <h3 class="text-lg font-bold text-white mb-4">📋 Atividade Recente</h3>
+                <div class="space-y-2">
+                    @foreach($recentActivity as $activity)
+                    <div class="flex items-center gap-3 text-sm py-2 border-b border-gray-800 last:border-0">
+                        <span class="text-gray-500">{{ $activity->created_at->format('H:i') }}</span>
+                        <span class="text-gray-400">
+                            <span class="text-white font-semibold">{{ $activity->user->name ?? 'Sistema' }}</span>
+                            {{ $activity->description }}
+                        </span>
+                    </div>
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>
+
+    <script>
+        // Prevent rapid-fire toggle clicks (Rate Limiting)
+        let toggleInProgress = false;
+
+        function toggleSetting(key, value) {
+            // Prevent double-click / rapid requests
+            if (toggleInProgress) {
+                console.warn('Toggle already in progress, please wait...');
+                return;
+            }
+
+            // Validate inputs on client side
+            const allowedKeys = ['public_uploads_enabled', 'maintenance_mode'];
+            if (!allowedKeys.includes(key)) {
+                alert('Configuração inválida');
+                return;
+            }
+
+            if (typeof value !== 'boolean') {
+                alert('Valor inválido');
+                return;
+            }
+
+            toggleInProgress = true;
+            const toggle = document.getElementById(`toggle-${key.replace('_', '-')}`);
+            
+            // Disable toggle button during request
+            if (toggle) {
+                toggle.disabled = true;
+                toggle.style.opacity = '0.5';
+            }
+
+            fetch('{{ route('admin.settings.toggle') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    key: key, 
+                    value: value 
+                }),
+                // Security: Don't send credentials to other domains
+                credentials: 'same-origin',
+            })
+            .then(response => {
+                // Check for HTTP errors
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Escape HTML to prevent XSS in alert
+                    const message = String(data.message).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    alert(message);
+                    
+                    // Reload page to reflect changes
+                    window.location.reload();
+                } else {
+                    throw new Error(data.message || 'Erro desconhecido');
+                }
+            })
+            .catch(error => {
+                console.error('Toggle error:', error);
+                
+                // Safe error message (don't expose stack trace)
+                const errorMsg = error.message || 'Erro ao alterar configuração';
+                alert(errorMsg);
+                
+                // Re-enable toggle
+                toggleInProgress = false;
+                if (toggle) {
+                    toggle.disabled = false;
+                    toggle.style.opacity = '1';
+                }
+            });
+        }
+
+        // Prevent CSRF token expiration issues
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if CSRF token exists
+            const csrfToken = '{{ csrf_token() }}';
+            if (!csrfToken) {
+                console.error('CSRF token missing! Forms may not work.');
+            }
+        });
+    </script>
 </x-app-layout>

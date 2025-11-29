@@ -7,6 +7,7 @@
     <title>{{ $title ?? 'Atrocidades' }}</title>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @vite(['resources/css/app.css'])
+    @stack('styles')
 </head>
 <body class="bg-black text-neutral-300 antialiased">
     <div class="min-h-screen">
@@ -14,19 +15,47 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex items-center">
-                        <a href="{{ auth()->check() ? route('videos.index') : route('home') }}" class="text-2xl font-bold text-neutral-400 hover:text-red-700 transition">
+                        <a href="{{ route('news.index') }}" class="text-2xl font-bold text-neutral-400 hover:text-red-700 transition">
                             ATROCIDADES
                         </a>
                     </div>
                     
                     <div class="flex items-center gap-4 md:gap-6">
+                        <!-- Search Bar (Global) -->
+                        <div class="relative hidden md:block" x-data="{ open: false, query: '' }">
+                            <div class="flex items-center">
+                                <button @click="open = !open" class="text-neutral-400 hover:text-neutral-200 transition p-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                    </svg>
+                                </button>
+                                <form action="{{ route('news.search') }}" method="GET" 
+                                      class="overflow-hidden transition-all duration-300"
+                                      :class="open ? 'w-64 opacity-100' : 'w-0 opacity-0'">
+                                    <input type="text" 
+                                           name="q" 
+                                           x-model="query"
+                                           placeholder="Pesquisar notícias..."
+                                           class="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600"
+                                           @keydown.escape="open = false">
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Search Button -->
+                        <a href="{{ route('news.search') }}?q=" class="md:hidden text-neutral-400 hover:text-neutral-200 transition p-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </a>
+
                         @auth
                             <!-- Desktop Navigation -->
-                            <a href="{{ route('videos.index') }}" class="hidden md:block text-neutral-400 hover:text-neutral-200 transition">
-                                Videos
+                            <a href="{{ route('news.index') }}" class="hidden md:block text-neutral-400 hover:text-neutral-200 transition">
+                                Notícias
                             </a>
-                            <a href="{{ route('videos.create') }}" class="hidden md:block text-neutral-400 hover:text-neutral-200 transition">
-                                Upload
+                            <a href="{{ route('news.create') }}" class="hidden md:block text-neutral-400 hover:text-neutral-200 transition">
+                                Enviar
                             </a>
                             @if(auth()->user()->is_admin)
                                 <a href="{{ route('dashboard') }}" class="hidden md:block text-neutral-400 hover:text-neutral-200 transition">
@@ -63,11 +92,11 @@
                                 </button>
                                 <div class="absolute right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                                     <!-- Mobile Navigation Items -->
-                                    <a href="{{ route('videos.index') }}" class="md:hidden block px-4 py-2 text-neutral-300 hover:bg-neutral-800 border-b border-neutral-800">
-                                        🎬 Videos
+                                    <a href="{{ route('news.index') }}" class="md:hidden block px-4 py-2 text-neutral-300 hover:bg-neutral-800 border-b border-neutral-800">
+                                        📰 Notícias
                                     </a>
-                                    <a href="{{ route('videos.create') }}" class="md:hidden block px-4 py-2 text-neutral-300 hover:bg-neutral-800 border-b border-neutral-800">
-                                        📤 Upload
+                                    <a href="{{ route('news.create') }}" class="md:hidden block px-4 py-2 text-neutral-300 hover:bg-neutral-800 border-b border-neutral-800">
+                                        📤 Enviar
                                     </a>
                                     @if(auth()->user()->is_admin)
                                         <a href="{{ route('dashboard') }}" class="md:hidden block px-4 py-2 text-neutral-300 hover:bg-neutral-800 border-b border-neutral-800">
@@ -88,8 +117,8 @@
                                     <a href="{{ route('profile.invites') }}" class="block px-4 py-2 text-neutral-300 hover:bg-neutral-800">
                                         📧 Convites
                                     </a>
-                                    <a href="{{ route('videos.my-videos') }}" class="block px-4 py-2 text-neutral-300 hover:bg-neutral-800">
-                                        🎥 Meus Vídeos
+                                    <a href="{{ route('news.my-submissions') }}" class="block px-4 py-2 text-neutral-300 hover:bg-neutral-800">
+                                        📋 Minhas Publicações
                                     </a>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
@@ -100,6 +129,9 @@
                                 </div>
                             </div>
                         @else
+                            <a href="{{ route('news.index') }}" class="hidden md:block text-neutral-400 hover:text-neutral-200 transition">
+                                Notícias
+                            </a>
                             <a href="{{ route('login') }}" class="text-neutral-400 hover:text-neutral-200 transition">
                                 Login
                             </a>
@@ -111,23 +143,19 @@
             <!-- Dynamic Category Submenu -->
             <div class="border-t border-neutral-800/50 bg-neutral-950/60 backdrop-blur-sm">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex items-center gap-3 py-2.5 overflow-x-auto scrollbar-hide">
-                        <span class="text-xs uppercase tracking-wider text-neutral-600 font-semibold whitespace-nowrap">
-                            Hoje:
-                        </span>
+                    <div class="flex items-center gap-6 py-2.5 overflow-x-auto scrollbar-hide">
+                        @php
+                            $currentCategory = request()->route('category') ?? request()->get('category');
+                        @endphp
                         @foreach($categoryMenu as $item)
-                        <a href="{{ route('videos.index', ['category' => $item['category']]) }}" 
-                           class="group flex items-center gap-2 px-3 py-1.5 rounded-full transition-all hover:scale-105 whitespace-nowrap"
-                           style="background-color: {{ $item['color'] }}15; border: 1px solid {{ $item['color'] }}30;">
-                            <span class="text-sm font-medium transition-colors group-hover:brightness-110" 
-                                  style="color: {{ $item['color'] }};">
-                                {{ $item['name'] }}
-                            </span>
+                        <a href="{{ route('news.category', ['category' => $item['category']]) }}" 
+                           class="relative text-sm font-semibold uppercase tracking-wider whitespace-nowrap transition-all pb-2
+                                  {{ $currentCategory === $item['category'] 
+                                     ? 'text-red-500 border-b-2 border-red-500' 
+                                     : 'text-neutral-300 hover:text-red-400 border-b-2 border-transparent hover:border-red-400/50' }}">
+                            {{ $item['name'] }}
                             @if($item['count'] > 0)
-                            <span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold rounded-full transition-all"
-                                  style="background-color: {{ $item['color'] }}; color: #000;">
-                                {{ $item['count'] }}
-                            </span>
+                            <span class="ml-1 text-xs text-neutral-500">({{ $item['count'] }})</span>
                             @endif
                         </a>
                         @endforeach
@@ -156,5 +184,7 @@
             {{ $slot }}
         </main>
     </div>
+    
+    @stack('scripts')
 </body>
 </html>

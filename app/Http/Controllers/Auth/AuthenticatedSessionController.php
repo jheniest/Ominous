@@ -29,7 +29,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('videos.index'));
+        return redirect()->intended(route('news.index'));
     }
 
     public function destroy(Request $request)
@@ -39,6 +39,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('videos.index');
+        return redirect()->route('news.index');
     }
 }
