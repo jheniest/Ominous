@@ -67,11 +67,15 @@ class VideoController extends Controller
             'media_files.*' => 'file|mimes:mp4,mov,avi,wmv,jpg,jpeg,png,gif,webp|max:102400', // 100MB per file
             'category' => 'required|in:guerra,terrorismo,chacina,massacre,suicidio,tribunal-do-crime',
             'is_nsfw' => 'boolean',
+            'is_members_only' => 'boolean',
             'tags' => 'nullable|string|max:255',
         ]);
 
         // Admin posts are auto-approved
         $status = Auth::user()->is_admin ? 'approved' : 'pending';
+
+        // Only admins can set is_members_only
+        $isMembersOnly = Auth::user()->is_admin ? ($validated['is_members_only'] ?? false) : false;
 
         $video = Auth::user()->videos()->create([
             'title' => $validated['title'],
@@ -81,6 +85,7 @@ class VideoController extends Controller
             'thumbnail_url' => null, // Will be generated
             'category' => $validated['category'],
             'is_nsfw' => $validated['is_nsfw'] ?? false,
+            'is_members_only' => $isMembersOnly,
             'status' => $status,
             'approved_by_user_id' => Auth::user()->is_admin ? Auth::id() : null,
             'approved_at' => Auth::user()->is_admin ? now() : null,

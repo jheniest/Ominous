@@ -59,7 +59,15 @@ use App\Helpers\CategoryHelper;
                 <!-- Cabeçalho -->
                 <header class="mb-6">
                     <!-- Badges -->
-                    <div class="flex items-center gap-2 mb-3">
+                    <div class="flex flex-wrap items-center gap-2 mb-3">
+                        @if($video->is_members_only)
+                        <span class="bg-gradient-to-r from-red-700 to-red-900 text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                            </svg>
+                            MEMBROS
+                        </span>
+                        @endif
                         @if($video->is_sensitive)
                         <span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">18+</span>
                         @endif
@@ -84,6 +92,15 @@ use App\Helpers\CategoryHelper;
                             </svg>
                             {{ $video->created_at->format('d/m/Y H:i') }}
                         </span>
+                        
+                        @if($video->editedBy)
+                        <span class="flex items-center gap-1 text-blue-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            Editado por {{ $video->editedBy->name }}
+                        </span>
+                        @endif
                         
                         <span class="flex items-center gap-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

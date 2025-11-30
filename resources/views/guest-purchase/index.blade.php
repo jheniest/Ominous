@@ -1,125 +1,89 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Comprar Convites - Atrocidades</title>
-    @vite(['resources/css/app.css', 'resources/css/creepy-background.css', 'resources/js/creepy-background.js'])
-</head>
-<body class="antialiased">
-    <div id="creepy-background-container">
-        <div id="background-vignette"></div>
-        <div id="background-noise"></div>
-    </div>
+@extends('layouts.guest')
 
-    <div class="relative min-h-screen z-10">
+@section('title', 'Comprar Convites - Atrocidades')
+
+@section('content')
+<div class="py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        <header class="border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-lg">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                <a href="{{ route('home') }}" class="text-2xl font-bold text-neutral-400 hover:text-red-700 transition">
-                    ATROCIDADES
-                </a>
-                <div class="flex gap-4">
-                    <a href="{{ route('login') }}" class="px-4 py-2 text-neutral-400 hover:text-neutral-200 transition">
-                        Login
-                    </a>
-                    <a href="{{ route('invite.validate') }}" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-semibold">
-                        Tenho um Convite
-                    </a>
-                </div>
-            </div>
-        </header>
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-neutral-200 mb-2">Adquira Convites</h1>
+            <p class="text-neutral-500 text-sm">Descontos progressivos: quanto mais você compra, mais você economiza</p>
+        </div>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-12">
-                    <h1 class="text-4xl font-bold text-red-500 mb-4">Adquira Convites</h1>
-                    <p class="text-lg text-neutral-400 mb-2">Escolha o pacote ideal para você e ganhe descontos progressivos</p>
-                    <p class="text-sm text-neutral-500">Após a compra, você receberá os códigos de convite por email</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                    @foreach($pricing as $quantity => $price)
-                        @php
-                            $basePrice = 20.00;
-                            $totalBase = $basePrice * $quantity;
-                            $discount = $quantity > 1 ? (($totalBase - $price) / $totalBase * 100) : 0;
-                        @endphp
-                        <div class="bg-neutral-950/60 backdrop-blur-lg border @if($quantity == 5) border-red-900/60 @else border-neutral-800 @endif rounded-lg overflow-hidden hover:border-red-900/40 transition group">
-                            @if($quantity == 5)
-                                <div class="bg-red-950/40 border-b border-red-900/50 px-4 py-2 text-center">
-                                    <span class="text-xs font-semibold text-red-400 uppercase tracking-wider">50% OFF</span>
-                                </div>
-                            @elseif($discount > 0)
-                                <div class="bg-neutral-900/60 border-b border-neutral-800 px-4 py-2 text-center">
-                                    <span class="text-xs font-semibold text-green-400 uppercase tracking-wider">{{ number_format($discount, 0) }}% OFF</span>
-                                </div>
-                            @else
-                                <div class="h-10"></div>
-                            @endif
-                            
-                            <div class="p-6">
-                                <div class="text-center mb-6">
-                                    <div class="text-4xl font-bold text-neutral-200 mb-2">{{ $quantity }}</div>
-                                    <div class="text-neutral-500 text-sm">{{ $quantity == 1 ? 'Convite' : 'Convites' }}</div>
-                                </div>
-
-                                <div class="text-center mb-6">
-                                    <div class="text-3xl font-bold text-red-400">R$ {{ number_format($price, 2, ',', '.') }}</div>
-                                    <div class="text-sm text-neutral-500 mt-1">R$ {{ number_format($price / $quantity, 2, ',', '.') }} cada</div>
-                                    @if($discount > 0)
-                                        <div class="text-xs text-green-400 mt-1">Economize R$ {{ number_format($totalBase - $price, 2, ',', '.') }}</div>
-                                    @endif
-                                </div>
-
-                                <form method="POST" action="{{ route('guest.purchase.checkout') }}">
-                                    @csrf
-                                    <input type="hidden" name="quantity" value="{{ $quantity }}">
-                                    <button type="submit" class="w-full px-4 py-3 @if($quantity == 5) bg-red-600 hover:bg-red-700 text-white @else bg-neutral-800 hover:bg-neutral-700 text-neutral-200 @endif rounded-lg transition font-semibold text-sm">
-                                        Comprar
-                                    </button>
-                                </form>
-                            </div>
+        <!-- Pricing Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            @foreach($pricing as $quantity => $price)
+                @php
+                    $basePrice = 20.00;
+                    $totalBase = $basePrice * $quantity;
+                    $discount = $quantity > 1 ? (($totalBase - $price) / $totalBase * 100) : 0;
+                    $isPopular = $quantity == 5;
+                @endphp
+                <div class="bg-neutral-900/60 backdrop-blur-xl border {{ $isPopular ? 'border-red-600/50' : 'border-neutral-800/50' }} rounded-xl overflow-hidden hover:border-red-600/30 transition group relative">
+                    @if($isPopular)
+                        <div class="absolute -top-px left-1/2 -translate-x-1/2 px-3 py-0.5 bg-red-600 text-white text-[10px] font-semibold uppercase tracking-wider rounded-b">
+                            Popular
                         </div>
-                    @endforeach
-                </div>
+                    @endif
+                    
+                    <div class="p-5 pt-6">
+                        <!-- Quantity -->
+                        <div class="text-center mb-4">
+                            <div class="text-3xl font-bold text-neutral-200">{{ $quantity }}</div>
+                            <div class="text-neutral-500 text-xs">{{ $quantity == 1 ? 'Convite' : 'Convites' }}</div>
+                        </div>
 
-                <div class="mt-12 bg-neutral-950/60 backdrop-blur-lg border border-neutral-800 rounded-lg p-8">
-                    <h3 class="text-lg font-semibold text-neutral-200 mb-4">Informações Importantes</h3>
-                    <ul class="space-y-2 text-neutral-400 text-sm">
-                        <li class="flex items-start gap-2">
-                            <span class="text-red-500">•</span>
-                            <span>Os convites nunca expiram após a compra</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-red-500">•</span>
-                            <span>Cada convite pode ser usado uma única vez</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-red-500">•</span>
-                            <span>Múltiplas opções de pagamento: PIX, Boleto, Crypto e Mercado Pago</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-red-500">•</span>
-                            <span>Seus convites serão enviados para o email cadastrado após confirmação do pagamento</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-red-500">•</span>
-                            <span>Quanto mais você compra, maior o desconto (até 50% OFF)</span>
-                        </li>
-                    </ul>
-                </div>
+                        <!-- Price -->
+                        <div class="text-center mb-4">
+                            <div class="text-2xl font-bold {{ $isPopular ? 'text-red-500' : 'text-neutral-200' }}">
+                                R$ {{ number_format($price, 2, ',', '.') }}
+                            </div>
+                            <div class="text-xs text-neutral-500">
+                                R$ {{ number_format($price / $quantity, 2, ',', '.') }}/cada
+                            </div>
+                            @if($discount > 0)
+                                <div class="mt-1 inline-block px-2 py-0.5 bg-green-900/30 text-green-400 text-[10px] font-semibold rounded">
+                                    -{{ number_format($discount, 0) }}%
+                                </div>
+                            @endif
+                        </div>
 
-                <div class="mt-8 text-center">
-                    <p class="text-neutral-500 text-sm">
-                        Já tem um convite? 
-                        <a href="{{ route('invite.validate') }}" class="text-red-400 hover:text-red-300 underline">
-                            Clique aqui para validar
-                        </a>
-                    </p>
+                        <!-- Button -->
+                        <form method="POST" action="{{ route('guest.purchase.checkout') }}">
+                            @csrf
+                            <input type="hidden" name="quantity" value="{{ $quantity }}">
+                            <button type="submit" class="w-full px-4 py-2 {{ $isPopular ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-200' }} rounded-lg transition font-medium text-sm">
+                                Comprar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <!-- Info Section -->
+        <div class="mt-10 bg-neutral-900/40 backdrop-blur-xl border border-neutral-800/50 rounded-xl p-6">
+            <h3 class="text-sm font-semibold text-neutral-300 mb-3">Informações</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm text-neutral-500">
+                <div class="flex items-center gap-2">
+                    <span class="text-red-500">•</span>
+                    <span>Convites não expiram após a compra</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-red-500">•</span>
+                    <span>Cada convite pode ser usado uma única vez</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-red-500">•</span>
+                    <span>PIX, Boleto, Crypto e Mercado Pago</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-red-500">•</span>
+                    <span>Entrega por email após confirmação</span>
                 </div>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>
+@endsection

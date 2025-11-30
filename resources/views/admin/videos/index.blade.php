@@ -138,6 +138,10 @@
 
                             <!-- Actions -->
                             <div class="flex flex-wrap gap-2">
+                                <a href="{{ route('admin.videos.edit', $video->id) }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-semibold transition-colors">
+                                    Editar
+                                </a>
+
                                 @if($video->status !== 'approved')
                                 <button onclick="showApproveModal({{ $video->id }}, '{{ addslashes($video->title) }}')" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg font-semibold transition-colors">
                                     Approve
@@ -157,14 +161,14 @@
                                 </form>
                                 @endif
 
-                                <form method="POST" action="{{ route('admin.videos.toggle-featured', $video) }}" class="inline">
+                                <form method="POST" action="{{ route('admin.videos.toggle-featured', $video->id) }}" class="inline">
                                     @csrf
                                     <button type="submit" class="px-4 py-2 {{ $video->is_featured ? 'bg-orange-600 hover:bg-orange-700' : 'bg-yellow-600 hover:bg-yellow-700' }} text-white text-sm rounded-lg font-semibold transition-colors">
                                         {{ $video->is_featured ? 'Unfeature' : 'Feature' }}
                                     </button>
                                 </form>
 
-                                <form method="POST" action="{{ route('admin.videos.destroy', $video) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this video permanently?')">
+                                <form method="POST" action="{{ route('admin.videos.destroy', $video->id) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this video permanently?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="px-4 py-2 bg-black hover:bg-red-950 text-red-400 text-sm rounded-lg font-semibold transition-colors border border-red-900">

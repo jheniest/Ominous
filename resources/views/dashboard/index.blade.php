@@ -250,7 +250,7 @@
                                 <span>{{ $video->user->name }}</span>
                                 <span>{{ $video->created_at->diffForHumans() }}</span>
                             </div>
-                            <a href="{{ route('admin.videos.show', $video) }}" class="block w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm text-center transition">
+                            <a href="{{ route('admin.videos.index', ['status' => 'pending']) }}" class="block w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm text-center transition">
                                 Moderar
                             </a>
                         </div>

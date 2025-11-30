@@ -28,12 +28,15 @@ class Video extends Model
         'rejection_reason',
         'approved_at',
         'approved_by_user_id',
+        'edited_by_user_id',
+        'edited_at',
         'views_count',
         'likes_count',
         'comments_count',
         'is_featured',
         'is_sensitive',
         'is_nsfw',
+        'is_members_only',
         'media_token',
         'media_token_expires',
     ];
@@ -42,11 +45,13 @@ class Video extends Model
     {
         return [
             'approved_at' => 'datetime',
+            'edited_at' => 'datetime',
             'incident_date' => 'datetime',
             'media_token_expires' => 'datetime',
             'is_featured' => 'boolean',
             'is_sensitive' => 'boolean',
             'is_nsfw' => 'boolean',
+            'is_members_only' => 'boolean',
         ];
     }
 
@@ -179,6 +184,11 @@ class Video extends Model
         return $this->belongsTo(User::class, 'approved_by_user_id');
     }
 
+    public function editedBy()
+    {
+        return $this->belongsTo(User::class, 'edited_by_user_id');
+    }
+
     public function comments()
     {
         return $this->hasMany(Comment::class);
@@ -222,6 +232,11 @@ class Video extends Model
     public function scopePublic($query)
     {
         return $query->where('is_sensitive', false);
+    }
+
+    public function scopeMembersOnly($query)
+    {
+        return $query->where('is_members_only', true);
     }
 
     public function scopeByCategory($query, string $category)

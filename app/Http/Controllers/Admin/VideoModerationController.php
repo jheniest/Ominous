@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Video;
 use App\Models\VideoReport;
 use App\Models\Notification;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,7 +14,7 @@ class VideoModerationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Video::with(['user', 'approvedBy'])
+        $query = Video::with(['user', 'approvedBy', 'editedBy'])
             ->withCount(['comments', 'reports']);
 
         // Status filter
@@ -34,8 +35,69 @@ class VideoModerationController extends Controller
         return view('admin.videos.index', compact('videos', 'stats', 'status'));
     }
 
-    public function approve(Request $request, Video $video)
+    public function edit(int $id)
     {
+        $video = Video::with(['user', 'media', 'tags'])->findOrFail($id);
+        
+        return view('admin.videos.edit', compact('video'));
+    }
+
+    public function update(Request $request, int $id)
+    {
+        $video = Video::findOrFail($id);
+        
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'subtitle' => 'nullable|string|max:255',
+            'description' => 'required|string',
+            'summary' => 'nullable|string|max:500',
+            'source' => 'nullable|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'category' => 'required|string|in:guerra,terrorismo,chacina,massacre,suicidio,tribunal-do-crime',
+            'is_members_only' => 'boolean',
+            'is_sensitive' => 'boolean',
+            'is_nsfw' => 'boolean',
+        ]);
+        
+        // Tratar checkboxes não marcados
+        $validated['is_members_only'] = $request->has('is_members_only');
+        $validated['is_sensitive'] = $request->has('is_sensitive');
+        $validated['is_nsfw'] = $request->has('is_nsfw');
+        
+        // Registrar quem editou
+        $validated['edited_by_user_id'] = Auth::id();
+        $validated['edited_at'] = now();
+        
+        $video->update($validated);
+        
+        // Log da atividade
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'video_edited_by_admin',
+            'description' => 'Editou a notícia: ' . $video->title,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+        
+        // Notificar o autor original
+        if ($video->user_id !== Auth::id()) {
+            Notification::create([
+                'user_id' => $video->user_id,
+                'type' => 'video_edited',
+                'title' => 'Notícia Editada',
+                'message' => 'Sua notícia "' . $video->title . '" foi editada pela moderação.',
+                'related_video_id' => $video->id,
+                'action_by_user_id' => Auth::id(),
+            ]);
+        }
+        
+        return redirect()->route('admin.videos.index')->with('success', 'Notícia atualizada com sucesso.');
+    }
+
+    public function approve(Request $request, int $id)
+    {
+        $video = Video::findOrFail($id);
+        
         $request->validate([
             'note' => 'nullable|string|max:500',
         ]);
@@ -55,8 +117,10 @@ class VideoModerationController extends Controller
         return back()->with('success', 'Vídeo aprovado e notificação enviada.');
     }
 
-    public function reject(Request $request, Video $video)
+    public function reject(Request $request, int $id)
     {
+        $video = Video::findOrFail($id);
+        
         $validated = $request->validate([
             'reason' => 'required|string|max:500',
             'note' => 'nullable|string|max:500',
@@ -77,8 +141,10 @@ class VideoModerationController extends Controller
         return back()->with('success', 'Vídeo recusado e notificação enviada.');
     }
 
-    public function hide(Request $request, Video $video)
+    public function hide(Request $request, int $id)
     {
+        $video = Video::findOrFail($id);
+        
         $request->validate([
             'note' => 'nullable|string|max:500',
         ]);
@@ -98,8 +164,10 @@ class VideoModerationController extends Controller
         return back()->with('success', 'Vídeo ocultado e notificação enviada.');
     }
 
-    public function toggleFeatured(Video $video)
+    public function toggleFeatured(int $id)
     {
+        $video = Video::findOrFail($id);
+        
         $video->update(['is_featured' => !$video->is_featured]);
 
         $message = $video->is_featured 
@@ -144,8 +212,10 @@ class VideoModerationController extends Controller
         return back()->with('success', 'Report ' . $validated['action'] . ' successfully.');
     }
 
-    public function destroy(Video $video)
+    public function destroy(int $id)
     {
+        $video = Video::findOrFail($id);
+        
         $video->delete();
 
         return back()->with('success', 'Video deleted successfully.');

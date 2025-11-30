@@ -96,6 +96,19 @@
                         </label>
                     </div>
 
+                    @auth
+                    @if(Auth::user()->is_admin)
+                    <!-- Members Only Toggle (Admin Only) -->
+                    <div class="flex items-center gap-3 bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-4">
+                        <input type="checkbox" id="is_members_only" name="is_members_only" value="1" {{ old('is_members_only') ? 'checked' : '' }} class="w-5 h-5 bg-gray-900 border-yellow-700 rounded text-yellow-600 focus:ring-yellow-500">
+                        <label for="is_members_only" class="text-sm text-yellow-400 font-semibold">
+                            ⭐ Apenas Membros
+                        </label>
+                        <span class="text-xs text-gray-500">(Somente usuários registrados podem ver)</span>
+                    </div>
+                    @endif
+                    @endauth
+
                     <!-- Tags -->
                     <div>
                         <label for="tags" class="block text-sm font-semibold text-gray-300 mb-2">Tags</label>

@@ -4,7 +4,33 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Atrocidades')</title>
+    
+    <!-- SEO Base -->
+    <title>@yield('title', 'Atrocidades - Portal de Notícias')</title>
+    <meta name="description" content="@yield('meta_description', 'Portal de notícias com cobertura de eventos mundiais, conflitos e acontecimentos relevantes. Informação verificada e atualizada.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'notícias, atualidades, mundo, conflitos, eventos, informação')">
+    <meta name="robots" content="@yield('meta_robots', 'index, follow')">
+    <meta name="author" content="Atrocidades">
+    <link rel="canonical" href="@yield('canonical', url()->current())">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('og_title', 'Atrocidades - Portal de Notícias')">
+    <meta property="og:description" content="@yield('og_description', 'Portal de notícias com cobertura de eventos mundiais.')">
+    <meta property="og:image" content="@yield('og_image', asset('images/og-default.jpg'))">
+    <meta property="og:site_name" content="Atrocidades">
+    <meta property="og:locale" content="pt_BR">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('twitter_title', 'Atrocidades - Portal de Notícias')">
+    <meta name="twitter:description" content="@yield('twitter_description', 'Portal de notícias com cobertura de eventos mundiais.')">
+    <meta name="twitter:image" content="@yield('twitter_image', asset('images/og-default.jpg'))">
+    
+    <!-- Schema.org JSON-LD -->
+    @stack('schema')
+    
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @vite(['resources/css/app.css'])
     @stack('styles')

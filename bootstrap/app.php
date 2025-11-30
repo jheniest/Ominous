@@ -16,9 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.suspended' => \App\Http\Middleware\CheckSuspended::class,
         ]);
         
-        // Add global middleware
-        $middleware->append(\App\Http\Middleware\UpdateLastSeen::class);
-        $middleware->append(\App\Http\Middleware\CheckMaintenanceMode::class);
+        // Add global middleware to web group
+        $middleware->web(append: [
+            \App\Http\Middleware\UpdateLastSeen::class,
+            \App\Http\Middleware\CheckMaintenanceMode::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

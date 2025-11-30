@@ -219,11 +219,13 @@ Route::middleware(['auth', 'admin', 'check.suspended'])->prefix('admin')->name('
     // Video Moderation
     Route::prefix('videos')->name('videos.')->group(function () {
         Route::get('/', [VideoModerationController::class, 'index'])->name('index');
-        Route::post('/{video}/approve', [VideoModerationController::class, 'approve'])->name('approve');
-        Route::post('/{video}/reject', [VideoModerationController::class, 'reject'])->name('reject');
-        Route::post('/{video}/hide', [VideoModerationController::class, 'hide'])->name('hide');
-        Route::post('/{video}/toggle-featured', [VideoModerationController::class, 'toggleFeatured'])->name('toggle-featured');
-        Route::delete('/{video}', [VideoModerationController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/edit', [VideoModerationController::class, 'edit'])->name('edit')->where('id', '[0-9]+');
+        Route::patch('/{id}', [VideoModerationController::class, 'update'])->name('update')->where('id', '[0-9]+');
+        Route::post('/{id}/approve', [VideoModerationController::class, 'approve'])->name('approve')->where('id', '[0-9]+');
+        Route::post('/{id}/reject', [VideoModerationController::class, 'reject'])->name('reject')->where('id', '[0-9]+');
+        Route::post('/{id}/hide', [VideoModerationController::class, 'hide'])->name('hide')->where('id', '[0-9]+');
+        Route::post('/{id}/toggle-featured', [VideoModerationController::class, 'toggleFeatured'])->name('toggle-featured')->where('id', '[0-9]+');
+        Route::delete('/{id}', [VideoModerationController::class, 'destroy'])->name('destroy')->where('id', '[0-9]+');
     });
     
     // Report Management

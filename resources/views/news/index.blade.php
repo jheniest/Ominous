@@ -61,27 +61,129 @@
         display: flex;
         flex-direction: column;
     }
+    
+    /* Members Only Badge Animation */
+    .members-badge {
+        background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+        animation: pulse-glow 2s ease-in-out infinite;
+    }
+    @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 5px rgba(185, 28, 28, 0.5); }
+        50% { box-shadow: 0 0 15px rgba(185, 28, 28, 0.8); }
+    }
 </style>
 @endpush
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-b from-[#0a0a0a] via-[#1a0a0a] to-[#0a0a0a]">
+<div class="min-h-screen bg-gradient-to-b from-[#0a0a0a] via-[#1a0a0a] to-[#0a0a0a]" x-data="{ 
+    showPaywall: false, 
+    paywallTitle: '',
+    paywallSlug: ''
+}">
+    
+    <!-- Paywall Modal -->
+    <div x-show="showPaywall" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="display: none;">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" @click="showPaywall = false"></div>
+        <div class="relative bg-gradient-to-b from-gray-900 to-black rounded-2xl max-w-md w-full p-8 border border-red-900/50 shadow-2xl shadow-red-900/20"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100">
+            
+            <!-- Close button -->
+            <button @click="showPaywall = false" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            
+            <!-- Lock Icon -->
+            <div class="flex justify-center mb-6">
+                <div class="w-20 h-20 bg-red-900/30 rounded-full flex items-center justify-center border-2 border-red-700/50">
+                    <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Title -->
+            <h3 class="text-2xl font-bold text-white text-center mb-2">Conteúdo Exclusivo</h3>
+            <p class="text-gray-400 text-center mb-2">para Membros</p>
+            
+            <!-- Article Title -->
+            <div class="bg-gray-800/50 rounded-lg p-4 mb-6 border border-gray-700/50">
+                <p class="text-gray-300 text-sm text-center line-clamp-2" x-text="paywallTitle"></p>
+            </div>
+            
+            <!-- Description -->
+            <p class="text-gray-400 text-center text-sm mb-6">
+                Este conteúdo está disponível apenas para membros registrados da comunidade. 
+                Faça login ou adquira um convite para ter acesso.
+            </p>
+            
+            <!-- Benefits -->
+            <div class="space-y-3 mb-6">
+                <div class="flex items-center gap-3 text-sm text-gray-300">
+                    <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Acesso a todo conteúdo exclusivo</span>
+                </div>
+                <div class="flex items-center gap-3 text-sm text-gray-300">
+                    <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Comentar e interagir nas notícias</span>
+                </div>
+                <div class="flex items-center gap-3 text-sm text-gray-300">
+                    <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Enviar seu próprio conteúdo</span>
+                </div>
+            </div>
+            
+            <!-- Buttons -->
+            <div class="space-y-3">
+                <a href="{{ route('login') }}" class="block w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-center transition-colors">
+                    Fazer Login
+                </a>
+                <div class="flex gap-3">
+                    <a href="{{ route('invite.validate') }}" class="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 rounded-lg text-center transition-colors border border-gray-700">
+                        Tenho Convite
+                    </a>
+                    <a href="{{ route('guest.purchase.index') }}" class="flex-1 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-500 hover:to-yellow-600 text-white font-semibold py-3 rounded-lg text-center transition-colors">
+                        Comprar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <!-- Breaking News Ticker -->
     @if($news->count() > 0)
-    <div class="bg-gradient-to-r from-red-900/80 via-red-800/80 to-red-900/80 border-b border-red-700/50">
-        <div class="max-w-7xl mx-auto px-4 flex items-center">
-            <div class="bg-red-600 px-3 sm:px-4 py-2 flex items-center gap-2 flex-shrink-0 -ml-4">
-                <span class="animate-pulse w-2 h-2 bg-white rounded-full"></span>
-                <span class="text-white font-bold text-xs sm:text-sm uppercase tracking-wider">Urgente</span>
-            </div>
-            <div class="ticker-wrapper flex-1 py-2 px-4">
-                <div class="ticker-content">
-                    @foreach($news->take(5) as $item)
-                        <a href="{{ route('news.show', $item->slug) }}" class="text-white/90 hover:text-white mx-6 sm:mx-8 text-sm">
-                            <span class="text-red-400">●</span> {{ $item->title }}
-                        </a>
-                    @endforeach
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="bg-gradient-to-r from-red-900/80 via-red-800/80 to-red-900/80 border border-red-700/50 rounded-lg mt-4">
+            <div class="flex items-center">
+                <div class="bg-red-600 px-3 sm:px-4 py-2 flex items-center gap-2 flex-shrink-0 rounded-l-lg">
+                    <span class="animate-pulse w-2 h-2 bg-white rounded-full"></span>
+                    <span class="text-white font-bold text-xs sm:text-sm uppercase tracking-wider">Urgente</span>
+                </div>
+                <div class="ticker-wrapper flex-1 py-2 px-4 overflow-hidden">
+                    <div class="ticker-content">
+                        @foreach($news->take(5) as $item)
+                            <a href="{{ route('news.show', $item->slug) }}" class="text-white/90 hover:text-white mx-6 sm:mx-8 text-sm">
+                                <span class="text-red-400">●</span> {{ $item->title }}
+                            </a>
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </div>
@@ -93,7 +195,11 @@
     @php $featuredVideo = $featured->first(); @endphp
     <section class="relative">
         <div class="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+            @if($featuredVideo->is_members_only && !auth()->check())
+            <div @click="paywallTitle = '{{ addslashes($featuredVideo->title) }}'; paywallSlug = '{{ $featuredVideo->slug }}'; showPaywall = true" class="block group cursor-pointer">
+            @else
             <a href="{{ route('news.show', $featuredVideo->slug) }}" class="block group">
+            @endif
                 <div class="relative rounded-xl overflow-hidden shadow-2xl shadow-red-900/20">
                     <!-- Media Container with Fixed Aspect Ratio -->
                     <div class="relative w-full aspect-video">
@@ -120,17 +226,22 @@
                                 <span class="bg-red-600 text-white text-xs font-bold px-2 sm:px-3 py-1 rounded uppercase tracking-wider">
                                     Destaque
                                 </span>
+                                @if($featuredVideo->is_members_only)
+                                    <span class="members-badge text-white text-xs font-bold px-2 sm:px-3 py-1 rounded flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                        MEMBROS
+                                    </span>
+                                @endif
                                 @if($featuredVideo->category)
                                     <span class="bg-red-900/30 text-red-400 text-xs px-2 sm:px-3 py-1 rounded-full uppercase">
                                         {{ \App\Helpers\CategoryHelper::format($featuredVideo->category) }}
                                     </span>
                                 @endif
                                 @if($featuredVideo->is_sensitive)
-                                    <span class="bg-yellow-600/80 text-yellow-100 text-xs px-2 py-1 rounded flex items-center gap-1">
-                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                                        </svg>
-                                        <span class="hidden sm:inline">MEMBROS</span>
+                                    <span class="bg-yellow-600/80 text-yellow-100 text-xs px-2 py-1 rounded">
+                                        +18
                                     </span>
                                 @endif
                             </div>
@@ -158,7 +269,11 @@
                         </div>
                     </div>
                 </div>
+            @if($featuredVideo->is_members_only && !auth()->check())
+            </div>
+            @else
             </a>
+            @endif
         </div>
     </section>
     @endif
@@ -194,9 +309,15 @@
                         
                         <div id="newsCarousel" class="carousel-container flex gap-4 overflow-x-auto scroll-smooth pb-4" style="scroll-snap-type: x mandatory;">
                             @foreach($trending as $video)
+                            @if($video->is_members_only && !auth()->check())
+                            <div @click="paywallTitle = '{{ addslashes($video->title) }}'; paywallSlug = '{{ $video->slug }}'; showPaywall = true"
+                               class="flex-shrink-0 w-[calc(50%-0.5rem)] sm:w-[calc(50%-0.5rem)] group cursor-pointer"
+                               style="scroll-snap-align: start;">
+                            @else
                             <a href="{{ route('news.show', $video->slug) }}" 
                                class="flex-shrink-0 w-[calc(50%-0.5rem)] sm:w-[calc(50%-0.5rem)] group"
                                style="scroll-snap-align: start;">
+                            @endif
                                 <div class="news-card bg-gradient-to-b from-gray-800/50 to-gray-900/50 rounded-xl overflow-hidden border border-gray-700/30 hover:border-red-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-red-900/20">
                                     <!-- Media Container -->
                                     <div class="media-wrapper">
@@ -214,8 +335,15 @@
                                             </div>
                                         @endif
                                         
-                                        <!-- Sensitive Badge (+18) - TOP LEFT -->
-                                        @if($video->is_sensitive)
+                                        <!-- Members Only Badge - TOP LEFT -->
+                                        @if($video->is_members_only)
+                                            <span class="absolute top-2 left-2 members-badge text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                                                <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                                </svg>
+                                                MEMBROS
+                                            </span>
+                                        @elseif($video->is_sensitive)
                                             <span class="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
                                                 +18
                                             </span>
@@ -240,7 +368,11 @@
                                         </div>
                                     </div>
                                 </div>
+                            @if($video->is_members_only && !auth()->check())
+                            </div>
+                            @else
                             </a>
+                            @endif
                             @endforeach
                         </div>
                     </div>
@@ -300,7 +432,11 @@
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         @forelse($news as $video)
+                        @if($video->is_members_only && !auth()->check())
+                        <div @click="paywallTitle = '{{ addslashes($video->title) }}'; paywallSlug = '{{ $video->slug }}'; showPaywall = true" class="group cursor-pointer">
+                        @else
                         <a href="{{ route('news.show', $video->slug) }}" class="group">
+                        @endif
                             <article class="news-card bg-gradient-to-b from-gray-800/30 to-gray-900/30 rounded-xl overflow-hidden border border-gray-700/20 hover:border-red-600/40 transition-all duration-300 hover:shadow-lg hover:shadow-red-900/10">
                                     <!-- Media Container -->
                                     <div class="media-wrapper">
@@ -321,8 +457,15 @@
                                         <!-- Gradient overlay -->
                                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                                         
-                                        <!-- Sensitive Badge (+18) - TOP LEFT -->
-                                        @if($video->is_sensitive)
+                                        <!-- Members Only Badge - TOP LEFT -->
+                                        @if($video->is_members_only)
+                                            <span class="absolute top-2 left-2 members-badge text-white text-xs font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                                </svg>
+                                                MEMBROS
+                                            </span>
+                                        @elseif($video->is_sensitive)
                                             <span class="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
                                                 +18
                                             </span>
@@ -354,7 +497,11 @@
                                     </div>
                                 </div>
                             </article>
+                        @if($video->is_members_only && !auth()->check())
+                        </div>
+                        @else
                         </a>
+                        @endif
                         @empty
                         <div class="col-span-full text-center py-12">
                             <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

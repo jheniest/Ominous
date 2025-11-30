@@ -22,7 +22,7 @@ class NewsController extends Controller
             ->with(['user:id,name,username', 'tags:id,name,slug'])
             ->select([
                 'id', 'title', 'slug', 'summary', 'description', 'thumbnail_url',
-                'category', 'views_count', 'comments_count', 'is_sensitive',
+                'category', 'views_count', 'comments_count', 'is_sensitive', 'is_members_only',
                 'source', 'location', 'incident_date', 'created_at', 'user_id'
             ]);
         
@@ -48,7 +48,7 @@ class NewsController extends Controller
                 ->with(['user:id,name,username', 'tags:id,name,slug'])
                 ->select([
                     'id', 'title', 'slug', 'summary', 'description', 'thumbnail_url',
-                    'category', 'views_count', 'is_sensitive', 'created_at', 'user_id'
+                    'category', 'views_count', 'is_sensitive', 'is_members_only', 'created_at', 'user_id'
                 ])
                 ->latest()
                 ->take(5)
@@ -61,7 +61,7 @@ class NewsController extends Controller
                 ->with(['user:id,name,username'])
                 ->select([
                     'id', 'title', 'slug', 'thumbnail_url', 'views_count',
-                    'is_sensitive', 'created_at', 'user_id'
+                    'is_sensitive', 'is_members_only', 'category', 'created_at', 'user_id'
                 ])
                 ->where('created_at', '>=', now()->subWeek())
                 ->orderByDesc('views_count')
@@ -125,16 +125,23 @@ class NewsController extends Controller
             abort(404);
         }
         
+        // Verificar se conteúdo é apenas para membros e usuário não está autenticado
+        if ($video->is_members_only && !auth()->check()) {
+            return redirect()->route('news.index')
+                ->with('error', 'Este conteúdo está disponível apenas para membros registrados.');
+        }
+        
         // Incrementar visualizações
         $video->incrementViews();
         
         // Carregar relacionamentos
         $video->load([
             'user:id,name,username,avatar',
+            'editedBy:id,name,username',
             'tags:id,name,slug',
             'comments' => function ($q) {
-                $q->with(['user:id,name,username,avatar', 'replies' => function ($r) {
-                    $r->with('user:id,name,username,avatar')
+                $q->with(['user:id,name,username,avatar,is_admin', 'replies' => function ($r) {
+                    $r->with('user:id,name,username,avatar,is_admin')
                         ->latest();
                 }])
                     ->whereNull('parent_id') // Only top-level comments
@@ -143,8 +150,11 @@ class NewsController extends Controller
             },
         ]);
         
-        // Verificar se usuário pode ver mídia sensível
-        $canViewMedia = !$video->is_sensitive || auth()->check();
+        // Verificar se usuário pode ver mídia (conteúdo sensível requer autenticação)
+        $canViewMedia = true;
+        if ($video->is_sensitive && !auth()->check()) {
+            $canViewMedia = false;
+        }
         
         // Gerar token de mídia se autorizado
         $mediaToken = null;

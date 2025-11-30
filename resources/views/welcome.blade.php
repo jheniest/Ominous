@@ -1,69 +1,37 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Atrocidades</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/css/creepy-background.css', 'resources/js/creepy-background.js'])
-</head>
-<body class="antialiased">
-    <div id="creepy-background-container">
-        <div id="background-vignette"></div>
-        <div id="background-noise"></div>
-    </div>
-    
-    <div id="horror-controls">
-        <button id="sound-toggle" class="horror-btn" title="Alternar Som">
-            <svg class="icon sound-on" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            </svg>
-            <svg class="icon sound-off" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                <line x1="23" y1="9" x2="17" y2="15"></line>
-                <line x1="17" y1="9" x2="23" y2="15"></line>
-            </svg>
-        </button>
-        <button id="apparitions-toggle" class="horror-btn" title="Alternar Aparições">
-            <svg class="icon apparitions-on" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-            <svg class="icon apparitions-off" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                <line x1="1" y1="1" x2="23" y2="23"></line>
-            </svg>
-        </button>
-    </div>
+@extends('layouts.auth')
 
-    <div class="relative min-h-screen flex flex-col items-center justify-center z-10 px-6">
-        <div class="text-center space-y-12 w-full max-w-2xl mx-auto">
-            <h1 class="text-6xl md:text-7xl lg:text-8xl font-bold text-neutral-400 hover:text-red-700 transition">
-                ATROCIDADES
-            </h1>
-            
-            <p class="text-xl text-neutral-400 font-light tracking-wide">
-                Algo te observa nas sombras.
-            </p>
+@section('title', 'Atrocidades')
 
-            <div class="flex flex-col gap-3 w-full mt-16">
-                @auth
-                    <a href="{{ route('dashboard') }}" class="ominous-btn ominous-btn-primary">
-                        <span>Entrar no Abismo</span>
-                    </a>
-                @else
-                    <a href="{{ route('invite.validate') }}" class="ominous-btn ominous-btn-primary">
-                        <span>Entrar com Convite</span>
-                    </a>
-                    <a href="{{ route('guest.purchase.index') }}" class="ominous-btn ominous-btn-secondary">
-                        <span>Comprar Convite</span>
-                    </a>
-                    <a href="{{ route('login') }}" class="ominous-btn ominous-btn-ghost">
-                        <span>Login</span>
-                    </a>
-                @endauth
-            </div>
+@section('content')
+<div class="min-h-[calc(100vh-57px)] flex items-center justify-center px-4 py-12">
+    <div class="text-center max-w-lg mx-auto">
+        <!-- Logo -->
+        <h1 class="text-5xl md:text-6xl font-bold text-neutral-300 hover:text-red-600 transition mb-4">
+            ATROCIDADES
+        </h1>
+        
+        <p class="text-neutral-500 text-sm mb-10">
+            Portal de notícias
+        </p>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col gap-3 max-w-xs mx-auto">
+            @auth
+                <a href="{{ route('news.index') }}" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium text-sm text-center">
+                    Ver Notícias
+                </a>
+            @else
+                <a href="{{ route('news.index') }}" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium text-sm text-center">
+                    Ver Notícias
+                </a>
+                <a href="{{ route('invite.validate') }}" class="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 rounded-lg transition font-medium text-sm text-center border border-neutral-700">
+                    Entrar com Convite
+                </a>
+                <a href="{{ route('guest.purchase.index') }}" class="px-6 py-3 text-neutral-400 hover:text-neutral-300 transition text-sm text-center">
+                    Comprar Convite
+                </a>
+            @endauth
         </div>
     </div>
-</body>
-</html>
+</div>
+@endsection
