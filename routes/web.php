@@ -9,7 +9,6 @@ use App\Http\Controllers\GuestPurchaseController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PurchaseController;
-use App\Http\Controllers\SecureMediaController;
 use App\Http\Controllers\VideoController;
 use Illuminate\Support\Facades\Route;
 
@@ -74,26 +73,6 @@ Route::prefix('news')->name('news.')->group(function () {
     
     // Notícia individual - público (mídia protegida por paywall)
     Route::get('/{video:slug}', [NewsController::class, 'show'])->name('show');
-});
-
-// =================================================================
-// SECURE MEDIA STREAMING - Proteção contra download
-// =================================================================
-Route::prefix('media')->name('media.')->group(function () {
-    // Gera URL temporária para mídia (requer autenticação para conteúdo sensível)
-    Route::post('/generate-url/{video}', [SecureMediaController::class, 'generateUrl'])
-        ->name('generate-url')
-        ->middleware('throttle:30,1');
-    
-    // Stream de mídia com token (validação interna)
-    Route::get('/stream/{token}/{mediaId}', [SecureMediaController::class, 'stream'])
-        ->name('stream')
-        ->where('mediaId', '[0-9]+');
-    
-    // Thumbnail de mídia
-    Route::get('/thumb/{token}/{mediaId}', [SecureMediaController::class, 'thumbnail'])
-        ->name('thumbnail')
-        ->where('mediaId', '[0-9]+');
 });
 
 // Redirect antigos URLs /videos/* para /news/*

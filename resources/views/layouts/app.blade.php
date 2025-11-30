@@ -35,7 +35,7 @@
     @vite(['resources/css/app.css'])
     @stack('styles')
 </head>
-<body class="bg-black text-neutral-300 antialiased">
+<body class="bg-[#0a0a0a] text-neutral-300 antialiased">
     <div class="min-h-screen">
         <nav class="border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-lg sticky top-0 z-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

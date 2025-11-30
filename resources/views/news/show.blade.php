@@ -4,32 +4,342 @@
 
 @push('styles')
 <style>
-    /* Proteção contra seleção e DevTools */
-    .protected-media {
-        user-select: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        pointer-events: none;
-    }
-    .protected-container {
+    /* Media Slider Styles */
+    .media-slider {
         position: relative;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(185, 28, 28, 0.3);
+        box-shadow: 0 0 20px rgba(185, 28, 28, 0.1);
     }
-    .protected-container::after {
-        content: '';
+    
+    .media-slider-container {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 11px;
+    }
+    
+    .media-slides {
+        display: flex;
+        transition: transform 0.4s ease-in-out;
+    }
+    
+    .media-slide {
+        min-width: 100%;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #000;
+    }
+    
+    .media-slide video,
+    .media-slide img {
+        max-width: 100%;
+        max-height: 70vh;
+        object-fit: contain;
+    }
+    
+    /* Slider Navigation */
+    .slider-nav {
         position: absolute;
-        top: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 20;
+        background: rgba(0, 0, 0, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .slider-nav:hover {
+        background: rgba(185, 28, 28, 0.8);
+        border-color: rgba(185, 28, 28, 0.5);
+    }
+    
+    .slider-nav.prev { left: 12px; }
+    .slider-nav.next { right: 12px; }
+    
+    /* Slider Dots */
+    .slider-dots {
+        position: absolute;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+        z-index: 20;
+    }
+    
+    .slider-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.4);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .slider-dot.active {
+        background: #dc2626;
+        transform: scale(1.2);
+    }
+    
+    .slider-dot:hover {
+        background: rgba(255, 255, 255, 0.8);
+    }
+    
+    /* Media Counter */
+    .media-counter {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        z-index: 20;
+    }
+    
+    /* Sensitive Content Warning Banner */
+    .sensitive-warning {
+        position: absolute;
+        bottom: 0;
         left: 0;
         right: 0;
-        bottom: 0;
-        z-index: 10;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.8));
+        padding: 12px 16px;
+        z-index: 25;
+        border-top: 1px solid rgba(185, 28, 28, 0.5);
+        transition: opacity 0.3s ease, transform 0.3s ease;
     }
-    .protected-container video {
-        pointer-events: auto;
+    
+    .sensitive-warning.hidden {
+        opacity: 0;
+        transform: translateY(100%);
+        pointer-events: none;
     }
-    /* Desabilitar menu de contexto no container */
-    .no-context {
-        -webkit-touch-callout: none;
+    
+    .sensitive-warning-inner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        max-width: 100%;
+    }
+    
+    .sensitive-icon {
+        flex-shrink: 0;
+        width: 32px;
+        height: 32px;
+        background: rgba(185, 28, 28, 0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Blur Overlay for Sensitive Content */
+    .sensitive-blur-overlay {
+        position: absolute;
+        inset: 0;
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 30;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.4s ease;
+        border-radius: 11px;
+    }
+    
+    .sensitive-blur-overlay.revealed {
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    .sensitive-warning-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(185, 28, 28, 0.4);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+    }
+    
+    @media (max-width: 640px) {
+        .sensitive-warning-icon {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 8px;
+        }
+        .sensitive-warning-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+    
+    .reveal-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: rgba(185, 28, 28, 0.9);
+        color: white;
+        font-weight: 600;
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+    }
+    
+    @media (max-width: 640px) {
+        .reveal-btn {
+            padding: 10px 20px;
+            font-size: 13px;
+            gap: 6px;
+        }
+        .reveal-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+    
+    .reveal-btn:hover {
+        background: rgba(220, 38, 38, 1);
+        transform: scale(1.05);
+    }
+    
+    /* LEIA TAMBÉM Box */
+    .read-also-box {
+        background: linear-gradient(135deg, rgba(15, 15, 15, 0.95), rgba(25, 10, 10, 0.95));
+        border: 1px solid rgba(185, 28, 28, 0.4);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 24px 0;
+        box-shadow: 0 4px 20px rgba(185, 28, 28, 0.1);
+    }
+    
+    .read-also-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(185, 28, 28, 0.3);
+    }
+    
+    .read-also-header span {
+        color: #dc2626;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .read-also-content {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    
+    .read-also-thumb {
+        flex-shrink: 0;
+        width: 100px;
+        height: 70px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #1a1a1a;
+    }
+    
+    .read-also-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .read-also-info {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .read-also-title {
+        color: #fff;
+        font-weight: 600;
+        font-size: 15px;
+        line-height: 1.4;
+        margin-bottom: 6px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .read-also-title:hover {
+        color: #dc2626;
+    }
+    
+    .read-also-meta {
+        font-size: 12px;
+        color: #6b7280;
+    }
+    
+    @media (max-width: 640px) {
+        .read-also-box {
+            padding: 16px;
+        }
+        .read-also-thumb {
+            width: 80px;
+            height: 56px;
+        }
+        .read-also-title {
+            font-size: 14px;
+        }
+    }
+    
+    /* Article Content Styling */
+    .article-content p {
+        margin-bottom: 1.25rem;
+        line-height: 1.8;
+    }
+    
+    .article-content p:last-child {
+        margin-bottom: 0;
+    }
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+    }
+    
+    .reveal-btn:hover {
+        background: rgba(220, 38, 38, 1);
+        transform: scale(1.05);
+    }
+    
+    /* Video Controls Override */
+    video::-webkit-media-controls-download-button {
+        display: none !important;
+    }
+    
+    video::-webkit-media-controls-enclosure {
+        overflow: hidden;
     }
 </style>
 @endpush
@@ -131,65 +441,158 @@ use App\Helpers\CategoryHelper;
                     </div>
                 </header>
 
-                <!-- Player de Mídia (Protegido) -->
+                <!-- Player de Mídia - Slider -->
                 <div class="mb-8">
-                    @if($canViewMedia)
-                        <!-- Container de mídia protegido -->
-                        <div 
-                            id="media-container" 
-                            class="protected-container no-context bg-black rounded-lg overflow-hidden"
-                            oncontextmenu="return false;"
-                        >
-                            <div id="media-player" class="aspect-video bg-zinc-900 flex items-center justify-center">
-                                <div class="text-center">
-                                    <svg class="w-12 h-12 mx-auto text-gray-600 animate-spin" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    <p class="text-gray-500 mt-2">Carregando mídia segura...</p>
+                    @if($canViewMedia && $video->media->count() > 0)
+                        <!-- Media Slider -->
+                        <div class="media-slider" x-data="mediaSlider({{ $video->media->count() }}, {{ ($video->is_sensitive || $video->is_nsfw) ? 'true' : 'false' }})">
+                            <div class="media-slider-container aspect-video">
+                                <div class="media-slides" :style="'transform: translateX(-' + (currentSlide * 100) + '%)'">
+                                    @foreach($video->media as $index => $media)
+                                    <div class="media-slide">
+                                        @if($media->isVideo())
+                                            <video 
+                                                controls 
+                                                controlsList="nodownload noremoteplayback" 
+                                                disablePictureInPicture
+                                                playsinline
+                                                preload="metadata"
+                                                @if($video->thumbnail_url) poster="{{ $video->thumbnail_url }}" @endif
+                                                class="w-full h-full"
+                                            >
+                                                <source src="{{ $media->url }}" type="{{ $media->mime_type }}">
+                                                Seu navegador não suporta o elemento de vídeo.
+                                            </video>
+                                        @else
+                                            <img 
+                                                src="{{ $media->url }}" 
+                                                alt="{{ $video->title }}"
+                                                class="w-full h-full object-contain"
+                                                loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
+                                            >
+                                        @endif
+                                    </div>
+                                    @endforeach
                                 </div>
+                                
+                                <!-- Navigation Arrows (show only if multiple media) -->
+                                @if($video->media->count() > 1)
+                                <button 
+                                    @click="prevSlide()" 
+                                    class="slider-nav prev"
+                                    x-show="currentSlide > 0 && !sensitiveBlur"
+                                >
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                    </svg>
+                                </button>
+                                <button 
+                                    @click="nextSlide()" 
+                                    class="slider-nav next"
+                                    x-show="currentSlide < totalSlides - 1 && !sensitiveBlur"
+                                >
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Media Counter -->
+                                <div class="media-counter" x-show="!sensitiveBlur">
+                                    <span x-text="currentSlide + 1"></span> / {{ $video->media->count() }}
+                                </div>
+                                
+                                <!-- Dots Navigation -->
+                                <div class="slider-dots" x-show="!sensitiveBlur">
+                                    @foreach($video->media as $index => $media)
+                                    <button 
+                                        @click="goToSlide({{ $index }})" 
+                                        class="slider-dot"
+                                        :class="{ 'active': currentSlide === {{ $index }} }"
+                                    ></button>
+                                    @endforeach
+                                </div>
+                                @endif
+                                
+                                <!-- Sensitive Content Blur Overlay -->
+                                @if($video->is_sensitive || $video->is_nsfw)
+                                <div 
+                                    class="sensitive-blur-overlay"
+                                    :class="{ 'revealed': !sensitiveBlur }"
+                                >
+                                    <div class="text-center px-4 flex flex-col items-center">
+                                        <div class="sensitive-warning-icon">
+                                            <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-white font-bold text-base sm:text-lg mb-1">Conteúdo Sensível</h3>
+                                        <p class="text-gray-400 text-xs sm:text-sm mb-4 max-w-xs">
+                                            Este material pode conter imagens fortes.
+                                        </p>
+                                        <button 
+                                            @click="revealContent()"
+                                            class="reveal-btn"
+                                        >
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                            VER ASSIM MESMO
+                                        </button>
+                                    </div>
+                                </div>
+                                @endif
                             </div>
                         </div>
-                        
-                        <!-- Aviso de proteção -->
-                        <p class="text-gray-600 text-xs mt-2 text-center">
-                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                            </svg>
-                            Conteúdo protegido - Download não disponível
-                        </p>
+                    @elseif($video->thumbnail_url)
+                        <!-- Fallback: Single Thumbnail -->
+                        <div class="media-slider" x-data="{ sensitiveBlur: {{ ($video->is_sensitive || $video->is_nsfw) ? 'true' : 'false' }} }">
+                            <div class="aspect-video bg-black flex items-center justify-center relative">
+                                <img 
+                                    src="{{ $video->thumbnail_url }}" 
+                                    alt="{{ $video->title }}"
+                                    class="w-full h-full object-contain"
+                                >
+                                
+                                @if($video->is_sensitive || $video->is_nsfw)
+                                <!-- Sensitive Content Blur Overlay -->
+                                <div 
+                                    class="sensitive-blur-overlay"
+                                    :class="{ 'revealed': !sensitiveBlur }"
+                                >
+                                    <div class="text-center px-4 flex flex-col items-center">
+                                        <div class="sensitive-warning-icon">
+                                            <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-white font-bold text-base sm:text-lg mb-1">Conteúdo Sensível</h3>
+                                        <p class="text-gray-400 text-xs sm:text-sm mb-4 max-w-xs">
+                                            Este material pode conter imagens fortes.
+                                        </p>
+                                        <button 
+                                            @click="sensitiveBlur = false"
+                                            class="reveal-btn"
+                                        >
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                            VER ASSIM MESMO
+                                        </button>
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
                     @else
-                        <!-- PayWall -->
-                        <div class="aspect-video bg-gradient-to-br from-zinc-900 to-black rounded-lg flex items-center justify-center relative overflow-hidden">
-                            <!-- Thumbnail borrada de fundo -->
-                            @if($video->thumbnail_url)
-                            <img 
-                                src="{{ $video->thumbnail_url }}" 
-                                alt="" 
-                                class="absolute inset-0 w-full h-full object-cover filter blur-xl opacity-30"
-                            >
-                            @endif
-                            
-                            <div class="relative z-10 text-center p-4 sm:p-6 md:p-8">
-                                <div class="bg-red-600/20 rounded-full p-3 sm:p-4 inline-block mb-3 sm:mb-4">
-                                    <svg class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                    </svg>
-                                </div>
-                                
-                                <h3 class="text-white text-lg sm:text-xl font-bold mb-2">Conteúdo para Membros</h3>
-                                <p class="text-gray-400 text-sm sm:text-base mb-4 sm:mb-6 max-w-md mx-auto">
-                                    Este conteúdo sensível está disponível apenas para membros registrados da comunidade.
-                                </p>
-                                
-                                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
-                                    <a href="{{ route('login') }}" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg transition-colors text-sm sm:text-base">
-                                        Fazer Login
-                                    </a>
-                                    <a href="{{ route('invite.validate') }}" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg transition-colors text-sm sm:text-base">
-                                        Entrar com Convite
-                                    </a>
-                                </div>
+                        <!-- No Media Available -->
+                        <div class="aspect-video bg-gradient-to-br from-zinc-900 to-black rounded-lg flex items-center justify-center">
+                            <div class="text-center text-gray-500">
+                                <svg class="w-16 h-16 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                </svg>
+                                <p>Mídia não disponível</p>
                             </div>
                         </div>
                     @endif
@@ -204,8 +607,59 @@ use App\Helpers\CategoryHelper;
                     @endif
                     
                     @if($video->description)
-                    <div class="text-gray-400 leading-relaxed mt-4 whitespace-pre-line">
-                        {{ $video->description }}
+                    @php
+                        $description = $video->description;
+                        
+                        // Verifica se tem tags <p> no conteúdo
+                        $hasParagraphs = preg_match_all('/<p[^>]*>.*?<\/p>/s', $description, $matches);
+                        
+                        // Se tiver parágrafos e tiver "LEIA TAMBÉM" para mostrar
+                        if ($hasParagraphs && count($matches[0]) >= 3 && isset($readAlso) && $readAlso) {
+                            $paragraphs = $matches[0];
+                            $totalParagraphs = count($paragraphs);
+                            
+                            // Posição aleatória entre o 2º parágrafo e o antepenúltimo
+                            $minPos = 1; // Após o 1º parágrafo (índice 1 = após 2º)
+                            $maxPos = max(1, $totalParagraphs - 2); // Antepenúltimo
+                            $insertPosition = rand($minPos, $maxPos);
+                            
+                            // Renderiza o box "LEIA TAMBÉM"
+                            $readAlsoHtml = '<div class="read-also-box not-prose">
+                                <div class="read-also-header">
+                                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                    </svg>
+                                    <span>Leia Também</span>
+                                </div>
+                                <a href="' . route('news.show', $readAlso->slug) . '" class="read-also-content group">
+                                    <div class="read-also-thumb">'
+                                        . ($readAlso->thumbnail_url 
+                                            ? '<img src="' . $readAlso->thumbnail_url . '" alt="' . e($readAlso->title) . '">'
+                                            : '<div class="w-full h-full bg-gradient-to-br from-red-900/50 to-zinc-800 flex items-center justify-center"><svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg></div>')
+                                    . '</div>
+                                    <div class="read-also-info">
+                                        <h4 class="read-also-title group-hover:text-red-500 transition-colors">' . e($readAlso->title) . '</h4>
+                                        <span class="read-also-meta">' . number_format($readAlso->views_count) . ' visualizações</span>
+                                    </div>
+                                </a>
+                            </div>';
+                            
+                            // Insere o box na posição calculada
+                            $output = '';
+                            foreach ($paragraphs as $index => $paragraph) {
+                                $output .= $paragraph;
+                                if ($index === $insertPosition) {
+                                    $output .= $readAlsoHtml;
+                                }
+                            }
+                            
+                            // Remove os parágrafos originais e substitui pelo output processado
+                            $description = preg_replace('/<p[^>]*>.*?<\/p>/s', '', $description);
+                            $description = $output . $description;
+                        }
+                    @endphp
+                    <div class="text-gray-400 leading-relaxed mt-4 article-content">
+                        {!! $description !!}
                     </div>
                     @endif
                 </div>
@@ -653,135 +1107,89 @@ use App\Helpers\CategoryHelper;
 @endsection
 
 @push('scripts')
-@if($canViewMedia && $mediaToken)
 <script>
-(function() {
-    'use strict';
-    
-    // Proteção contra DevTools
-    const devtools = {
-        isOpen: false,
-        orientation: undefined
-    };
-    
-    const threshold = 160;
-    
-    const emitEvent = (isOpen, orientation) => {
-        if (isOpen && devtools.isOpen !== isOpen) {
-            console.clear();
-            // Não bloquear completamente, mas dificultar
-        }
-    };
-    
-    setInterval(() => {
-        const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-        const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-        const orientation = widthThreshold ? 'vertical' : 'horizontal';
+// Media Slider Component
+function mediaSlider(totalSlides, isSensitive = false) {
+    return {
+        currentSlide: 0,
+        totalSlides: totalSlides,
+        sensitiveBlur: isSensitive,
         
-        if (!(heightThreshold && widthThreshold) && ((window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) || widthThreshold || heightThreshold)) {
-            devtools.isOpen = true;
-            devtools.orientation = orientation;
-        } else {
-            devtools.isOpen = false;
-            devtools.orientation = undefined;
-        }
+        revealContent() {
+            this.sensitiveBlur = false;
+        },
         
-        emitEvent(devtools.isOpen, devtools.orientation);
-    }, 500);
-    
-    // Desabilitar teclas de atalho comuns
-    document.addEventListener('keydown', function(e) {
-        // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-        if (e.key === 'F12' || 
-            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-            (e.ctrlKey && e.key === 'U')) {
-            e.preventDefault();
-            return false;
-        }
-    });
-    
-    // Desabilitar clique direito no player
-    document.getElementById('media-container')?.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        return false;
-    });
-    
-    // Carregar mídia de forma segura
-    const token = @json($mediaToken);
-    const videoId = @json($video->id);
-    
-    async function loadSecureMedia() {
-        try {
-            const response = await fetch(`/media/generate-url/{{ $video->id }}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                },
-                credentials: 'same-origin'
+        nextSlide() {
+            if (this.sensitiveBlur) return;
+            if (this.currentSlide < this.totalSlides - 1) {
+                this.pauseCurrentVideo();
+                this.currentSlide++;
+            }
+        },
+        
+        prevSlide() {
+            if (this.sensitiveBlur) return;
+            if (this.currentSlide > 0) {
+                this.pauseCurrentVideo();
+                this.currentSlide--;
+            }
+        },
+        
+        goToSlide(index) {
+            if (this.sensitiveBlur) return;
+            if (index >= 0 && index < this.totalSlides) {
+                this.pauseCurrentVideo();
+                this.currentSlide = index;
+            }
+        },
+        
+        pauseCurrentVideo() {
+            const slides = document.querySelectorAll('.media-slide');
+            const currentSlideEl = slides[this.currentSlide];
+            if (currentSlideEl) {
+                const video = currentSlideEl.querySelector('video');
+                if (video) {
+                    video.pause();
+                }
+            }
+        },
+        
+        init() {
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (this.sensitiveBlur) return;
+                if (e.key === 'ArrowLeft') {
+                    this.prevSlide();
+                } else if (e.key === 'ArrowRight') {
+                    this.nextSlide();
+                }
             });
             
-            if (!response.ok) {
-                throw new Error('Falha ao carregar mídia');
-            }
+            // Touch/swipe support
+            let touchStartX = 0;
+            let touchEndX = 0;
             
-            const data = await response.json();
-            const container = document.getElementById('media-player');
+            const slider = this.$el;
             
-            if (data.media && data.media.length > 0) {
-                const media = data.media[0];
+            slider.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+            
+            slider.addEventListener('touchend', (e) => {
+                if (this.sensitiveBlur) return;
+                touchEndX = e.changedTouches[0].screenX;
+                const diff = touchStartX - touchEndX;
                 
-                if (media.type === 'video' || media.url.includes('video')) {
-                    container.innerHTML = `
-                        <video 
-                            controls 
-                            controlsList="nodownload noremoteplayback" 
-                            disablePictureInPicture
-                            oncontextmenu="return false;"
-                            class="w-full h-full protected-media"
-                            playsinline
-                        >
-                            <source src="${media.url}" type="video/mp4">
-                            Seu navegador não suporta o elemento de vídeo.
-                        </video>
-                    `;
-                } else {
-                    container.innerHTML = `
-                        <img 
-                            src="${media.url}" 
-                            alt=""
-                            class="w-full h-full object-contain protected-media"
-                            oncontextmenu="return false;"
-                            draggable="false"
-                        >
-                    `;
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) {
+                        this.nextSlide();
+                    } else {
+                        this.prevSlide();
+                    }
                 }
-            } else {
-                // Fallback para thumbnail
-                container.innerHTML = `
-                    <div class="flex items-center justify-center h-full">
-                        <p class="text-gray-500">Mídia não disponível</p>
-                    </div>
-                `;
-            }
-        } catch (error) {
-            console.error('Erro ao carregar mídia:', error);
-            document.getElementById('media-player').innerHTML = `
-                <div class="flex items-center justify-center h-full">
-                    <p class="text-red-500">Erro ao carregar mídia. Tente novamente.</p>
-                </div>
-            `;
+            }, { passive: true });
         }
     }
-    
-    // Carregar mídia quando a página carregar
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadSecureMedia);
-    } else {
-        loadSecureMedia();
-    }
-})();
+}
 </script>
-@endif
 @endpush

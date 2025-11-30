@@ -156,11 +156,8 @@ class NewsController extends Controller
             $canViewMedia = false;
         }
         
-        // Gerar token de mídia se autorizado
-        $mediaToken = null;
-        if ($canViewMedia && $video->media()->exists()) {
-            $mediaToken = $video->generateMediaToken(30);
-        }
+        // Carregar mídias do vídeo
+        $video->load('media');
         
         // Notícias relacionadas (mesma categoria ou tags)
         $related = Cache::remember("news.related.{$video->id}", 600, function () use ($video) {
@@ -182,6 +179,34 @@ class NewsController extends Controller
                 ->get();
         });
         
+        // "LEIA TAMBÉM" - Recomendação inline para inserir entre parágrafos
+        // Critérios: mesma categoria OU mesmas tags, ordenado por relevância (views + recência)
+        $readAlso = Cache::remember("news.read_also.{$video->id}", 600, function () use ($video) {
+            $candidates = Video::approved()
+                ->where('id', '!=', $video->id)
+                ->where(function ($q) use ($video) {
+                    // Prioridade 1: Mesma categoria
+                    $q->where('category', $video->category);
+                    
+                    // Prioridade 2: Tags em comum
+                    if ($video->tags->isNotEmpty()) {
+                        $q->orWhereHas('tags', function ($tagQuery) use ($video) {
+                            $tagQuery->whereIn('tags.id', $video->tags->pluck('id'));
+                        });
+                    }
+                })
+                ->select([
+                    'id', 'title', 'slug', 'thumbnail_url', 'views_count',
+                    'category', 'created_at'
+                ])
+                ->orderByDesc('views_count')
+                ->take(5)
+                ->get();
+            
+            // Retorna um aleatório dos top 5, ou null se não houver
+            return $candidates->isNotEmpty() ? $candidates->random() : null;
+        });
+        
         // Mais do mesmo autor
         $moreFromAuthor = Video::approved()
             ->where('user_id', $video->user_id)
@@ -194,8 +219,8 @@ class NewsController extends Controller
         return view('news.show', compact(
             'video',
             'canViewMedia',
-            'mediaToken',
             'related',
+            'readAlso',
             'moreFromAuthor'
         ));
     }
