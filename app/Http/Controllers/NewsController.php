@@ -19,7 +19,7 @@ class NewsController extends Controller
         
         // Query base - apenas aprovados
         $query = Video::approved()
-            ->with(['user:id,name,username', 'tags:id,name,slug'])
+            ->with(['user:id,name,nickname,username', 'tags:id,name,slug'])
             ->select([
                 'id', 'title', 'slug', 'summary', 'description', 'thumbnail_url',
                 'category', 'views_count', 'comments_count', 'is_sensitive', 'is_members_only',
@@ -45,7 +45,7 @@ class NewsController extends Controller
         $featured = Cache::remember('news.featured', 300, function () {
             return Video::approved()
                 ->featured()
-                ->with(['user:id,name,username', 'tags:id,name,slug'])
+                ->with(['user:id,name,nickname,username', 'tags:id,name,slug'])
                 ->select([
                     'id', 'title', 'slug', 'summary', 'description', 'thumbnail_url',
                     'category', 'views_count', 'is_sensitive', 'is_members_only', 'created_at', 'user_id'
@@ -58,7 +58,7 @@ class NewsController extends Controller
         // Mais vistas da semana (cached por 10 min)
         $trending = Cache::remember('news.trending', 600, function () {
             return Video::approved()
-                ->with(['user:id,name,username'])
+                ->with(['user:id,name,nickname,username'])
                 ->select([
                     'id', 'title', 'slug', 'thumbnail_url', 'views_count',
                     'is_sensitive', 'is_members_only', 'category', 'created_at', 'user_id'
@@ -92,7 +92,7 @@ class NewsController extends Controller
         // Mais comentadas (cached por 10 min)
         $mostCommented = Cache::remember('news.most_commented', 600, function () {
             return Video::approved()
-                ->with(['user:id,name,username'])
+                ->with(['user:id,name,nickname,username'])
                 ->select([
                     'id', 'title', 'slug', 'thumbnail_url', 'comments_count',
                     'is_sensitive', 'created_at', 'user_id'
@@ -103,6 +103,20 @@ class NewsController extends Controller
                 ->get();
         });
         
+        // Notícias exclusivas para membros (cached por 10 min)
+        $membersOnly = Cache::remember('news.members_only', 600, function () {
+            return Video::approved()
+                ->with(['user:id,name,nickname,username'])
+                ->select([
+                    'id', 'title', 'slug', 'summary', 'thumbnail_url',
+                    'views_count', 'created_at', 'user_id'
+                ])
+                ->where('is_members_only', true)
+                ->latest()
+                ->take(6)
+                ->get();
+        });
+        
         return view('news.index', compact(
             'news',
             'featured',
@@ -110,6 +124,7 @@ class NewsController extends Controller
             'categories',
             'popularTags',
             'mostCommented',
+            'membersOnly',
             'category',
             'tag'
         ));
@@ -136,12 +151,12 @@ class NewsController extends Controller
         
         // Carregar relacionamentos
         $video->load([
-            'user:id,name,username,avatar',
-            'editedBy:id,name,username',
+            'user:id,name,nickname,username,avatar',
+            'editedBy:id,name,nickname,username',
             'tags:id,name,slug',
             'comments' => function ($q) {
-                $q->with(['user:id,name,username,avatar,is_admin', 'replies' => function ($r) {
-                    $r->with('user:id,name,username,avatar,is_admin')
+                $q->with(['user:id,name,nickname,username,avatar,is_admin', 'replies' => function ($r) {
+                    $r->with('user:id,name,nickname,username,avatar,is_admin')
                         ->latest();
                 }])
                     ->whereNull('parent_id') // Only top-level comments
@@ -169,7 +184,7 @@ class NewsController extends Controller
                             $tagQuery->whereIn('tags.id', $video->tags->pluck('id'));
                         });
                 })
-                ->with(['user:id,name,username'])
+                ->with(['user:id,name,nickname,username'])
                 ->select([
                     'id', 'title', 'slug', 'thumbnail_url', 'views_count',
                     'is_sensitive', 'created_at', 'user_id', 'category'
@@ -249,7 +264,7 @@ class NewsController extends Controller
                         $tagQ->where('name', 'like', $searchTerms);
                     });
             })
-            ->with(['user:id,name,username', 'tags:id,name,slug'])
+            ->with(['user:id,name,nickname,username', 'tags:id,name,slug'])
             ->select([
                 'id', 'title', 'slug', 'summary', 'description', 'thumbnail_url',
                 'category', 'views_count', 'is_sensitive', 'created_at', 'user_id'
@@ -267,7 +282,13 @@ class NewsController extends Controller
     public function category(string $category)
     {
         // Lista de categorias válidas
-        $validCategories = ['guerra', 'terrorismo', 'chacina', 'massacre', 'suicidio', 'tribunal-do-crime'];
+        $validCategories = [
+            'guerra', 'terrorismo', 'chacina', 'massacre', 'suicidio', 'tribunal-do-crime',
+            'homicidio', 'assalto', 'sequestro', 'tiroteio',
+            'acidentes', 'desastres',
+            'operacao-policial', 'faccoes',
+            'conflitos', 'execucoes'
+        ];
         
         if (!in_array($category, $validCategories)) {
             abort(404, 'Categoria não encontrada');
@@ -275,7 +296,7 @@ class NewsController extends Controller
         
         $news = Video::approved()
             ->byCategory($category)
-            ->with(['user:id,name,username', 'tags:id,name,slug'])
+            ->with(['user:id,name,nickname,username', 'tags:id,name,slug'])
             ->select([
                 'videos.id', 'videos.title', 'videos.slug', 'videos.summary', 'videos.description', 
                 'videos.thumbnail_url', 'videos.category', 'videos.views_count', 'videos.is_sensitive', 
@@ -296,7 +317,7 @@ class NewsController extends Controller
         
         $news = $tag->videos()
             ->approved()
-            ->with(['user:id,name,username'])
+            ->with(['user:id,name,nickname,username'])
             ->select([
                 'videos.id', 'videos.title', 'videos.slug', 'videos.summary', 'videos.description', 
                 'videos.thumbnail_url', 'videos.category', 'videos.views_count', 'videos.is_sensitive', 

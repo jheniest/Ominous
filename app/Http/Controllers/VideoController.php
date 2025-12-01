@@ -65,7 +65,7 @@ class VideoController extends Controller
             'description' => 'required|string|max:5000',
             'media_files' => 'required|array|min:1|max:10',
             'media_files.*' => 'file|mimes:mp4,mov,avi,wmv,jpg,jpeg,png,gif,webp|max:102400', // 100MB per file
-            'category' => 'required|in:guerra,terrorismo,chacina,massacre,suicidio,tribunal-do-crime',
+            'category' => 'required|in:guerra,terrorismo,chacina,massacre,suicidio,tribunal-do-crime,homicidio,assalto,sequestro,tiroteio,acidentes,desastres,operacao-policial,faccoes,conflitos,execucoes',
             'is_nsfw' => 'boolean',
             'is_members_only' => 'boolean',
             'tags' => 'nullable|string|max:255',
@@ -210,7 +210,7 @@ class VideoController extends Controller
             'subtitle' => 'nullable|string|max:500',
             'description' => 'required|string|max:5000',
             'thumbnail_url' => 'nullable|url|max:500',
-            'category' => 'required|in:guerra,terrorismo,chacina,massacre,suicidio,tribunal-do-crime',
+            'category' => 'required|in:guerra,terrorismo,chacina,massacre,suicidio,tribunal-do-crime,homicidio,assalto,sequestro,tiroteio,acidentes,desastres,operacao-policial,faccoes,conflitos,execucoes',
             'is_nsfw' => 'boolean',
             'tags' => 'nullable|string|max:255',
         ]);

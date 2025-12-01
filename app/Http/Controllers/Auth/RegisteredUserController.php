@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\ValidNickname;
 use App\Services\InviteService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -45,10 +46,20 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'nickname' => ['required', 'string', new ValidNickname()],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'invite_code' => ['required', 'string'],
             'terms' => ['accepted'],
+        ], [
+            'nickname.required' => 'O nickname é obrigatório.',
+            'name.required' => 'O nome é obrigatório.',
+            'email.required' => 'O email é obrigatório.',
+            'email.email' => 'Digite um email válido.',
+            'email.unique' => 'Este email já está em uso.',
+            'password.required' => 'A senha é obrigatória.',
+            'password.confirmed' => 'As senhas não conferem.',
+            'terms.accepted' => 'Você deve aceitar os termos.',
         ]);
 
         $validation = $this->inviteService->validateInviteCode($request->invite_code);
@@ -59,6 +70,7 @@ class RegisteredUserController extends Controller
 
         $user = User::create([
             'name' => $request->name,
+            'nickname' => strtolower(ltrim($request->nickname, '@')),
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
@@ -72,5 +84,42 @@ class RegisteredUserController extends Controller
         $request->session()->forget('validated_invite_code');
 
         return redirect()->route('news.index')->with('success', 'Bem-vindo ao Atrocidades! Sua conta foi criada com sucesso.');
+    }
+    
+    /**
+     * Check if a nickname is available (AJAX endpoint).
+     */
+    public function checkNickname(Request $request)
+    {
+        $nickname = strtolower(ltrim($request->input('nickname', ''), '@'));
+        
+        if (strlen($nickname) < 3) {
+            return response()->json([
+                'available' => false,
+                'message' => 'Mínimo 3 caracteres'
+            ]);
+        }
+        
+        if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $nickname)) {
+            return response()->json([
+                'available' => false,
+                'message' => 'Apenas letras, números, _ e -'
+            ]);
+        }
+        
+        $reserved = ['admin', 'administrator', 'moderator', 'mod', 'root', 'system', 'support', 'help', 'atrocidades'];
+        if (in_array($nickname, $reserved)) {
+            return response()->json([
+                'available' => false,
+                'message' => 'Nickname reservado'
+            ]);
+        }
+        
+        $exists = User::where('nickname', $nickname)->exists();
+        
+        return response()->json([
+            'available' => !$exists,
+            'message' => $exists ? 'Nickname já em uso' : 'Disponível!'
+        ]);
     }
 }

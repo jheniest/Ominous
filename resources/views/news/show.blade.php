@@ -679,6 +679,7 @@ use App\Helpers\CategoryHelper;
                 @endif
 
                 <!-- Autor -->
+                @if($video->user)
                 <div class="flex items-center gap-4 p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 mb-8">
                     <a href="{{ route('profile.show', $video->user) }}" class="shrink-0">
                         @if($video->user->avatar)
@@ -718,6 +719,16 @@ use App\Helpers\CategoryHelper;
                     @endif
                     @endauth
                 </div>
+                @else
+                <div class="flex items-center gap-4 p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 mb-8">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-gray-500 font-bold text-lg shrink-0">
+                        ?
+                    </div>
+                    <div>
+                        <span class="text-gray-500 font-medium">Usuário Removido</span>
+                    </div>
+                </div>
+                @endif
 
                 <!-- Comentários -->
                 @auth
@@ -822,23 +833,33 @@ use App\Helpers\CategoryHelper;
                         <div class="comment-thread">
                             <!-- Comentário principal -->
                             <div class="flex gap-3" id="comment-{{ $comment->id }}">
-                                @if($comment->user->avatar)
-                                    <img 
-                                        src="{{ asset('storage/' . $comment->user->avatar) }}" 
-                                        alt="{{ $comment->user->name }}"
-                                        class="w-10 h-10 rounded-full object-cover shrink-0"
-                                    >
+                                @if($comment->user)
+                                    @if($comment->user->avatar)
+                                        <img 
+                                            src="{{ asset('storage/' . $comment->user->avatar) }}" 
+                                            alt="{{ $comment->user->name }}"
+                                            class="w-10 h-10 rounded-full object-cover shrink-0"
+                                        >
+                                    @else
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-900 to-red-950 flex items-center justify-center text-white font-bold shrink-0">
+                                            {{ substr($comment->user->name, 0, 1) }}
+                                        </div>
+                                    @endif
                                 @else
-                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-900 to-red-950 flex items-center justify-center text-white font-bold shrink-0">
-                                        {{ substr($comment->user->name, 0, 1) }}
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-gray-500 font-bold shrink-0">
+                                        ?
                                     </div>
                                 @endif
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 flex-wrap">
+                                        @if($comment->user)
                                         <a href="{{ route('profile.show', $comment->user) }}" class="text-white font-medium text-sm hover:text-red-500 transition-colors">
                                             {{ $comment->user->name }}
                                         </a>
-                                        @if($comment->user->is_admin)
+                                        @else
+                                        <span class="text-gray-500 font-medium text-sm">Usuário Removido</span>
+                                        @endif
+                                        @if($comment->user && $comment->user->is_admin)
                                             <span class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded uppercase">Admin</span>
                                         @endif
                                         <span class="text-gray-600 text-xs">{{ $comment->created_at->diffForHumans() }}</span>
@@ -915,23 +936,33 @@ use App\Helpers\CategoryHelper;
                             <div class="ml-12 mt-3 space-y-3 border-l-2 border-zinc-700 pl-4">
                                 @foreach($comment->replies as $reply)
                                 <div class="flex gap-3" id="comment-{{ $reply->id }}">
-                                    @if($reply->user->avatar)
-                                        <img 
-                                            src="{{ asset('storage/' . $reply->user->avatar) }}" 
-                                            alt="{{ $reply->user->name }}"
-                                            class="w-8 h-8 rounded-full object-cover shrink-0"
-                                        >
+                                    @if($reply->user)
+                                        @if($reply->user->avatar)
+                                            <img 
+                                                src="{{ asset('storage/' . $reply->user->avatar) }}" 
+                                                alt="{{ $reply->user->name }}"
+                                                class="w-8 h-8 rounded-full object-cover shrink-0"
+                                            >
+                                        @else
+                                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-red-900 to-red-950 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                                                {{ substr($reply->user->name, 0, 1) }}
+                                            </div>
+                                        @endif
                                     @else
-                                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-red-900 to-red-950 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                                            {{ substr($reply->user->name, 0, 1) }}
+                                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-gray-500 font-bold text-sm shrink-0">
+                                            ?
                                         </div>
                                     @endif
                                     <div class="flex-1">
                                         <div class="flex items-center gap-2 flex-wrap">
+                                            @if($reply->user)
                                             <a href="{{ route('profile.show', $reply->user) }}" class="text-white font-medium text-sm hover:text-red-500 transition-colors">
                                                 {{ $reply->user->name }}
                                             </a>
-                                            @if($reply->user->is_admin)
+                                            @else
+                                            <span class="text-gray-500 font-medium text-sm">Usuário Removido</span>
+                                            @endif
+                                            @if($reply->user && $reply->user->is_admin)
                                                 <span class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded uppercase">Admin</span>
                                             @endif
                                             <span class="text-gray-600 text-xs">{{ $reply->created_at->diffForHumans() }}</span>

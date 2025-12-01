@@ -74,10 +74,12 @@ class Notification extends Model
             'video_approved' => '✓',
             'video_rejected' => '✗',
             'video_hidden' => '🚫',
+            'video_edited' => '✏️',
             'comment_approved' => '✓',
             'comment_hidden' => '🚫',
             'account_suspended' => '⚠',
             'account_unsuspended' => '✓',
+            'admin_message' => '📢',
             default => '🔔',
         };
     }
@@ -87,7 +89,44 @@ class Notification extends Model
         return match($this->type) {
             'video_approved', 'comment_approved', 'account_unsuspended' => 'text-green-500',
             'video_rejected', 'video_hidden', 'comment_hidden', 'account_suspended' => 'text-red-500',
+            'admin_message' => 'text-yellow-500',
+            'video_edited' => 'text-blue-500',
             default => 'text-blue-500',
         };
+    }
+
+    /**
+     * Send admin notification to a specific user or all users.
+     */
+    public static function sendAdminMessage(string $title, string $message, ?int $userId = null, ?int $adminId = null): int
+    {
+        $count = 0;
+        
+        if ($userId) {
+            // Send to specific user
+            static::create([
+                'user_id' => $userId,
+                'type' => 'admin_message',
+                'title' => $title,
+                'message' => $message,
+                'action_by_user_id' => $adminId,
+            ]);
+            $count = 1;
+        } else {
+            // Send to all users
+            $users = \App\Models\User::where('is_suspended', false)->get();
+            foreach ($users as $user) {
+                static::create([
+                    'user_id' => $user->id,
+                    'type' => 'admin_message',
+                    'title' => $title,
+                    'message' => $message,
+                    'action_by_user_id' => $adminId,
+                ]);
+                $count++;
+            }
+        }
+        
+        return $count;
     }
 }

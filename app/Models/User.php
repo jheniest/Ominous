@@ -21,6 +21,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'nickname',
         'email',
         'password',
         'avatar',
@@ -59,6 +60,65 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_verified' => 'boolean',
         ];
+    }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'nickname';
+    }
+
+    /**
+     * Resolve the model for route binding, handling @ prefix.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        // Remove @ prefix if present
+        $nickname = ltrim($value, '@');
+        
+        return $this->where('nickname', strtolower($nickname))->firstOrFail();
+    }
+
+    /**
+     * Get formatted nickname with @ prefix.
+     */
+    public function getFormattedNicknameAttribute(): string
+    {
+        return '@' . $this->nickname;
+    }
+
+    /**
+     * Set nickname always as lowercase.
+     */
+    public function setNicknameAttribute(string $value): void
+    {
+        $this->attributes['nickname'] = strtolower(ltrim($value, '@'));
+    }
+
+    /**
+     * Find user by nickname (with or without @).
+     */
+    public static function findByNickname(string $nickname): ?self
+    {
+        $nickname = strtolower(ltrim($nickname, '@'));
+        return static::where('nickname', $nickname)->first();
+    }
+
+    /**
+     * Check if a nickname exists.
+     */
+    public static function nicknameExists(string $nickname, ?int $excludeId = null): bool
+    {
+        $nickname = strtolower(ltrim($nickname, '@'));
+        $query = static::where('nickname', $nickname);
+        
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+        
+        return $query->exists();
     }
 
     public function invitedBy(): BelongsTo

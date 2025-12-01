@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Rules\ValidNickname;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -10,6 +11,9 @@ use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
+    /**
+     * Display user profile by nickname.
+     */
     public function show(User $user)
     {
         $videos = $user->videos()
@@ -41,8 +45,18 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'nickname' => ['required', 'string', new ValidNickname($user->id)],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+        ], [
+            'name.required' => 'O nome é obrigatório.',
+            'nickname.required' => 'O nickname é obrigatório.',
+            'email.required' => 'O email é obrigatório.',
+            'email.email' => 'Digite um email válido.',
+            'email.unique' => 'Este email já está em uso.',
         ]);
+
+        // Ensure nickname is lowercase without @
+        $validated['nickname'] = strtolower(ltrim($validated['nickname'], '@'));
 
         $user->update($validated);
 
@@ -80,5 +94,45 @@ class ProfileController extends Controller
         }
 
         return back()->with('success', 'Foto de perfil removida com sucesso.');
+    }
+    
+    /**
+     * Check if a nickname is available (AJAX endpoint).
+     */
+    public function checkNickname(Request $request)
+    {
+        $nickname = strtolower(ltrim($request->input('nickname', ''), '@'));
+        $userId = Auth::id();
+        
+        if (strlen($nickname) < 3) {
+            return response()->json([
+                'available' => false,
+                'message' => 'Mínimo 3 caracteres'
+            ]);
+        }
+        
+        if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $nickname)) {
+            return response()->json([
+                'available' => false,
+                'message' => 'Apenas letras, números, _ e -'
+            ]);
+        }
+        
+        $reserved = ['admin', 'administrator', 'moderator', 'mod', 'root', 'system', 'support', 'help', 'atrocidades'];
+        if (in_array($nickname, $reserved)) {
+            return response()->json([
+                'available' => false,
+                'message' => 'Nickname reservado'
+            ]);
+        }
+        
+        $exists = User::where('nickname', $nickname)
+            ->where('id', '!=', $userId)
+            ->exists();
+        
+        return response()->json([
+            'available' => !$exists,
+            'message' => $exists ? 'Nickname já em uso' : 'Disponível!'
+        ]);
     }
 }

@@ -143,6 +143,11 @@ Route::middleware(['auth', 'check.suspended'])->group(function () {
     Route::delete('/profile/avatar', [App\Http\Controllers\ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
     Route::get('/profile/invites', [App\Http\Controllers\ProfileController::class, 'invites'])->name('profile.invites');
     
+    // Nickname availability check (authenticated)
+    Route::post('/profile/check-nickname', [App\Http\Controllers\ProfileController::class, 'checkNickname'])
+        ->name('profile.check-nickname')
+        ->middleware('throttle:30,1');
+    
     // Invites Management (moved to profile)
     Route::prefix('profile/invites')->name('profile.invites.')->group(function () {
         Route::post('/', [InviteController::class, 'store'])->name('store');
@@ -174,8 +179,26 @@ Route::middleware(['auth', 'check.suspended'])->group(function () {
     Route::get('/my-submissions', [VideoController::class, 'myVideos'])->name('news.my-submissions');
 });
 
-// Public Routes (Profile é público)
-Route::get('/profile/{user}', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
+// Public Routes (Profile é público - usa nickname)
+Route::get('/profile/@{user:nickname}', [App\Http\Controllers\ProfileController::class, 'show'])
+    ->name('profile.show')
+    ->where('user', '[a-zA-Z][a-zA-Z0-9_-]*');
+
+// Redirect old profile URLs (by ID) to new format
+Route::get('/profile/{id}', function ($id) {
+    if (is_numeric($id)) {
+        $user = \App\Models\User::find($id);
+        if ($user) {
+            return redirect()->route('profile.show', ['user' => $user->nickname], 301);
+        }
+    }
+    abort(404);
+})->where('id', '[0-9]+');
+
+// Nickname availability check (public for registration)
+Route::post('/api/check-nickname', [App\Http\Controllers\Auth\RegisteredUserController::class, 'checkNickname'])
+    ->name('api.check-nickname')
+    ->middleware('throttle:30,1');
 
 // Admin Routes
 Route::middleware(['auth', 'admin', 'check.suspended'])->prefix('admin')->name('admin.')->group(function () {
@@ -194,6 +217,13 @@ Route::middleware(['auth', 'admin', 'check.suspended'])->prefix('admin')->name('
     Route::get('/invites', [AdminDashboardController::class, 'invites'])->name('invites.index');
     Route::get('/purchases', [AdminDashboardController::class, 'purchases'])->name('purchases');
     Route::get('/activity', [AdminDashboardController::class, 'activityLogs'])->name('activity');
+    
+    // Admin Notifications
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\AdminNotificationController::class, 'index'])->name('index');
+        Route::post('/send', [App\Http\Controllers\Admin\AdminNotificationController::class, 'send'])->name('send');
+        Route::get('/search-users', [App\Http\Controllers\Admin\AdminNotificationController::class, 'searchUsers'])->name('search-users');
+    });
     
     // Video Moderation
     Route::prefix('videos')->name('videos.')->group(function () {

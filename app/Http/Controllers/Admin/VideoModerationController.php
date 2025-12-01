@@ -53,7 +53,7 @@ class VideoModerationController extends Controller
             'summary' => 'nullable|string|max:500',
             'source' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
-            'category' => 'required|string|in:guerra,terrorismo,chacina,massacre,suicidio,tribunal-do-crime',
+            'category' => 'required|string|in:guerra,terrorismo,chacina,massacre,suicidio,tribunal-do-crime,homicidio,assalto,sequestro,tiroteio,acidentes,desastres,operacao-policial,faccoes,conflitos,execucoes',
             'is_members_only' => 'boolean',
             'is_sensitive' => 'boolean',
             'is_nsfw' => 'boolean',

@@ -143,6 +143,9 @@
                         <a href="{{ route('admin.activity') }}" class="block px-3 py-2 bg-red-900/30 hover:bg-red-900/50 rounded text-sm text-red-400 transition">
                             📊 Logs de Atividade
                         </a>
+                        <a href="{{ route('admin.notifications.index') }}" class="block px-3 py-2 bg-red-900/30 hover:bg-red-900/50 rounded text-sm text-red-400 transition">
+                            📢 Enviar Notificações
+                        </a>
                     </div>
                 </div>
             </div>

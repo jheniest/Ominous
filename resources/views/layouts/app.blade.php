@@ -168,21 +168,82 @@
             </div>
 
             <!-- Dynamic Category Submenu -->
-            <div class="border-t border-neutral-800/50 bg-neutral-950/60 backdrop-blur-sm">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex items-center gap-6 py-2.5 overflow-x-auto scrollbar-hide">
+            <div class="border-t border-neutral-800/50 bg-neutral-950/60 backdrop-blur-sm" x-data="{
+                scrollContainer: null,
+                showLeftArrow: false,
+                showRightArrow: true,
+                init() {
+                    this.scrollContainer = this.$refs.categoryScroll;
+                    this.checkArrows();
+                    this.scrollContainer.addEventListener('scroll', () => this.checkArrows());
+                    window.addEventListener('resize', () => this.checkArrows());
+                },
+                checkArrows() {
+                    if (!this.scrollContainer) return;
+                    this.showLeftArrow = this.scrollContainer.scrollLeft > 10;
+                    this.showRightArrow = this.scrollContainer.scrollLeft < (this.scrollContainer.scrollWidth - this.scrollContainer.clientWidth - 10);
+                },
+                scrollLeft() {
+                    this.scrollContainer.scrollBy({ left: -200, behavior: 'smooth' });
+                },
+                scrollRight() {
+                    this.scrollContainer.scrollBy({ left: 200, behavior: 'smooth' });
+                }
+            }">
+                <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 relative">
+                    <!-- Left Arrow Button -->
+                    <button 
+                        x-show="showLeftArrow"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100"
+                        x-transition:leave-end="opacity-0"
+                        @click="scrollLeft()"
+                        class="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 flex items-center justify-center bg-neutral-900/95 hover:bg-red-900/80 border border-neutral-700 hover:border-red-600 rounded-full shadow-lg transition-all duration-200"
+                        style="display: none;">
+                        <svg class="w-4 h-4 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    
+                    <!-- Right Arrow Button -->
+                    <button 
+                        x-show="showRightArrow"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100"
+                        x-transition:leave-end="opacity-0"
+                        @click="scrollRight()"
+                        class="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 flex items-center justify-center bg-neutral-900/95 hover:bg-red-900/80 border border-neutral-700 hover:border-red-600 rounded-full shadow-lg transition-all duration-200"
+                        style="display: none;">
+                        <svg class="w-4 h-4 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                    
+                    <!-- Fade indicators for mobile -->
+                    <div x-show="showLeftArrow" class="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-neutral-950 via-neutral-950/80 to-transparent pointer-events-none z-10"></div>
+                    <div x-show="showRightArrow" class="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-neutral-950 via-neutral-950/80 to-transparent pointer-events-none z-10"></div>
+                    
+                    <div x-ref="categoryScroll" 
+                         class="flex items-center gap-3 sm:gap-5 py-2.5 overflow-x-auto scroll-smooth px-6 sm:px-8
+                                [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         @php
                             $currentCategory = request()->route('category') ?? request()->get('category');
                         @endphp
                         @foreach($categoryMenu as $item)
                         <a href="{{ route('news.category', ['category' => $item['category']]) }}" 
-                           class="relative text-sm font-semibold uppercase tracking-wider whitespace-nowrap transition-all pb-2
+                           class="relative text-xs sm:text-sm font-semibold uppercase tracking-wider whitespace-nowrap transition-all py-1.5 px-3 sm:px-3 rounded-full flex-shrink-0
                                   {{ $currentCategory === $item['category'] 
-                                     ? 'text-red-500 border-b-2 border-red-500' 
-                                     : 'text-neutral-300 hover:text-red-400 border-b-2 border-transparent hover:border-red-400/50' }}">
+                                     ? 'text-white bg-red-600 shadow-lg shadow-red-900/30' 
+                                     : 'text-neutral-300 bg-neutral-800/50 hover:bg-red-900/40 hover:text-red-400' }}">
                             {{ $item['name'] }}
                             @if($item['count'] > 0)
-                            <span class="ml-1 text-xs text-neutral-500">({{ $item['count'] }})</span>
+                            <span class="ml-1 text-[10px] sm:text-xs {{ $currentCategory === $item['category'] ? 'text-red-200' : 'text-neutral-500' }}">({{ $item['count'] }})</span>
                             @endif
                         </a>
                         @endforeach

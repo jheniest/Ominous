@@ -59,12 +59,32 @@
                             id="category" 
                             required
                             class="w-full bg-gray-900 border border-red-900/50 rounded-lg px-4 py-3 text-gray-100 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500">
-                        <option value="guerra" {{ old('category', $video->category) === 'guerra' ? 'selected' : '' }}>Guerra</option>
-                        <option value="terrorismo" {{ old('category', $video->category) === 'terrorismo' ? 'selected' : '' }}>Terrorismo</option>
-                        <option value="chacina" {{ old('category', $video->category) === 'chacina' ? 'selected' : '' }}>Chacina</option>
-                        <option value="massacre" {{ old('category', $video->category) === 'massacre' ? 'selected' : '' }}>Massacre</option>
-                        <option value="suicidio" {{ old('category', $video->category) === 'suicidio' ? 'selected' : '' }}>Suicídio</option>
-                        <option value="tribunal-do-crime" {{ old('category', $video->category) === 'tribunal-do-crime' ? 'selected' : '' }}>Tribunal do Crime</option>
+                        <optgroup label="Violência Extrema">
+                            <option value="guerra" {{ old('category', $video->category) === 'guerra' ? 'selected' : '' }}>⚔️ Guerra</option>
+                            <option value="terrorismo" {{ old('category', $video->category) === 'terrorismo' ? 'selected' : '' }}>💣 Terrorismo</option>
+                            <option value="chacina" {{ old('category', $video->category) === 'chacina' ? 'selected' : '' }}>🔪 Chacina</option>
+                            <option value="massacre" {{ old('category', $video->category) === 'massacre' ? 'selected' : '' }}>💀 Massacre</option>
+                            <option value="suicidio" {{ old('category', $video->category) === 'suicidio' ? 'selected' : '' }}>⚠️ Suicídio</option>
+                            <option value="tribunal-do-crime" {{ old('category', $video->category) === 'tribunal-do-crime' ? 'selected' : '' }}>⚖️ Tribunal do Crime</option>
+                        </optgroup>
+                        <optgroup label="Crimes Violentos">
+                            <option value="homicidio" {{ old('category', $video->category) === 'homicidio' ? 'selected' : '' }}>🩸 Homicídio</option>
+                            <option value="assalto" {{ old('category', $video->category) === 'assalto' ? 'selected' : '' }}>🔫 Assalto</option>
+                            <option value="sequestro" {{ old('category', $video->category) === 'sequestro' ? 'selected' : '' }}>🚐 Sequestro</option>
+                            <option value="tiroteio" {{ old('category', $video->category) === 'tiroteio' ? 'selected' : '' }}>💥 Tiroteio</option>
+                        </optgroup>
+                        <optgroup label="Acidentes & Tragédias">
+                            <option value="acidentes" {{ old('category', $video->category) === 'acidentes' ? 'selected' : '' }}>🚗 Acidentes</option>
+                            <option value="desastres" {{ old('category', $video->category) === 'desastres' ? 'selected' : '' }}>🌊 Desastres</option>
+                        </optgroup>
+                        <optgroup label="Policial & Segurança">
+                            <option value="operacao-policial" {{ old('category', $video->category) === 'operacao-policial' ? 'selected' : '' }}>🚔 Operação Policial</option>
+                            <option value="faccoes" {{ old('category', $video->category) === 'faccoes' ? 'selected' : '' }}>💀 Facções</option>
+                        </optgroup>
+                        <optgroup label="Internacional">
+                            <option value="conflitos" {{ old('category', $video->category) === 'conflitos' ? 'selected' : '' }}>🔥 Conflitos</option>
+                            <option value="execucoes" {{ old('category', $video->category) === 'execucoes' ? 'selected' : '' }}>☠️ Execuções</option>
+                        </optgroup>
                     </select>
                     @error('category')
                         <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
