@@ -117,6 +117,17 @@ class NewsController extends Controller
                 ->get();
         });
         
+        // Notícias em atualização (sem cache - precisa ser real-time)
+        $updatingNews = Video::approved()
+            ->updating()
+            ->with(['user:id,name,nickname,username'])
+            ->select([
+                'id', 'title', 'slug', 'category', 'updating_since', 'created_at', 'user_id'
+            ])
+            ->orderByDesc('updating_since')
+            ->take(5)
+            ->get();
+        
         return view('news.index', compact(
             'news',
             'featured',
@@ -125,9 +136,29 @@ class NewsController extends Controller
             'popularTags',
             'mostCommented',
             'membersOnly',
+            'updatingNews',
             'category',
             'tag'
         ));
+    }
+
+    /**
+     * Página de notícias em atualização
+     */
+    public function updating()
+    {
+        $updatingNews = Video::approved()
+            ->updating()
+            ->with(['user:id,name,nickname,username', 'tags:id,name,slug'])
+            ->select([
+                'id', 'title', 'slug', 'summary', 'description', 'thumbnail_url',
+                'category', 'views_count', 'comments_count', 'is_sensitive', 'is_members_only',
+                'source', 'location', 'updating_since', 'created_at', 'user_id'
+            ])
+            ->orderByDesc('updating_since')
+            ->paginate(20);
+
+        return view('news.updating', compact('updatingNews'));
     }
 
     /**

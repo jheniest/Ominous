@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use App\View\Composers\CategoryMenuComposer;
@@ -22,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Configura Carbon para português brasileiro
+        Carbon::setLocale('pt_BR');
+        setlocale(LC_TIME, 'pt_BR.UTF-8', 'pt_BR', 'Portuguese_Brazil.1252');
+        
         View::composer(['layouts.app', 'components.app-layout'], CategoryMenuComposer::class);
         View::composer(['layouts.auth'], HeadlinesComposer::class);
     }

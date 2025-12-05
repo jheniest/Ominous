@@ -68,14 +68,16 @@ class VideoController extends Controller
             'category' => 'required|in:guerra,terrorismo,chacina,massacre,suicidio,tribunal-do-crime,homicidio,assalto,sequestro,tiroteio,acidentes,desastres,operacao-policial,faccoes,conflitos,execucoes',
             'is_nsfw' => 'boolean',
             'is_members_only' => 'boolean',
+            'is_updating' => 'boolean',
             'tags' => 'nullable|string|max:255',
         ]);
 
         // Admin posts are auto-approved
         $status = Auth::user()->is_admin ? 'approved' : 'pending';
 
-        // Only admins can set is_members_only
+        // Only admins can set is_members_only and is_updating
         $isMembersOnly = Auth::user()->is_admin ? ($validated['is_members_only'] ?? false) : false;
+        $isUpdating = Auth::user()->is_admin ? ($validated['is_updating'] ?? false) : false;
 
         $video = Auth::user()->videos()->create([
             'title' => $validated['title'],
@@ -86,6 +88,8 @@ class VideoController extends Controller
             'category' => $validated['category'],
             'is_nsfw' => $validated['is_nsfw'] ?? false,
             'is_members_only' => $isMembersOnly,
+            'is_updating' => $isUpdating,
+            'updating_since' => $isUpdating ? now() : null,
             'status' => $status,
             'approved_by_user_id' => Auth::user()->is_admin ? Auth::id() : null,
             'approved_at' => Auth::user()->is_admin ? now() : null,
@@ -268,11 +272,19 @@ class VideoController extends Controller
         foreach ($tagNames as $tagName) {
             if (empty($tagName)) continue;
 
-            // Find or create tag
-            $tag = Tag::firstOrCreate(
-                ['name' => $tagName],
-                ['color' => $this->getRandomTagColor()]
-            );
+            // Generate slug to search by (prevents duplicates with different casing)
+            $slug = \Illuminate\Support\Str::slug($tagName);
+            
+            // Find by slug or create new tag
+            $tag = Tag::where('slug', $slug)->first();
+            
+            if (!$tag) {
+                $tag = Tag::create([
+                    'name' => $tagName,
+                    'slug' => $slug,
+                    'color' => $this->getRandomTagColor(),
+                ]);
+            }
 
             $tagIds[] = $tag->id;
         }

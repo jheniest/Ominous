@@ -37,6 +37,8 @@ class Video extends Model
         'is_sensitive',
         'is_nsfw',
         'is_members_only',
+        'is_updating',
+        'updating_since',
         'media_token',
         'media_token_expires',
     ];
@@ -48,10 +50,12 @@ class Video extends Model
             'edited_at' => 'datetime',
             'incident_date' => 'datetime',
             'media_token_expires' => 'datetime',
+            'updating_since' => 'datetime',
             'is_featured' => 'boolean',
             'is_sensitive' => 'boolean',
             'is_nsfw' => 'boolean',
             'is_members_only' => 'boolean',
+            'is_updating' => 'boolean',
         ];
     }
 
@@ -237,6 +241,11 @@ class Video extends Model
     public function scopeMembersOnly($query)
     {
         return $query->where('is_members_only', true);
+    }
+
+    public function scopeUpdating($query)
+    {
+        return $query->where('is_updating', true);
     }
 
     public function scopeByCategory($query, string $category)

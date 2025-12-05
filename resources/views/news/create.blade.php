@@ -255,6 +255,30 @@
                             </div>
                         </label>
                     </div>
+
+                    <!-- Em Atualização / AO VIVO (Admin Only) -->
+                    <div class="mb-6">
+                        <label class="flex items-center gap-3 cursor-pointer p-4 bg-red-900/20 border border-red-800/50 rounded-lg hover:border-red-600 transition">
+                            <input 
+                                type="checkbox" 
+                                id="is_updating" 
+                                name="is_updating" 
+                                value="1" 
+                                {{ old('is_updating') ? 'checked' : '' }} 
+                                class="w-5 h-5 text-red-600 bg-neutral-800 border-red-700 rounded focus:ring-red-500"
+                            >
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="relative flex h-2.5 w-2.5">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                    </span>
+                                    <span class="text-red-400 font-medium">Em Atualização (AO VIVO)</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Marque para notícias em andamento que serão atualizadas</p>
+                            </div>
+                        </label>
+                    </div>
                     @endif
                     @endauth
 

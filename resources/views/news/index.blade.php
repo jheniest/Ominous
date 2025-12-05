@@ -4,19 +4,6 @@
 
 @push('styles')
 <style>
-    /* Breaking news ticker */
-    .ticker-wrapper {
-        overflow: hidden;
-        white-space: nowrap;
-    }
-    .ticker-content {
-        display: inline-block;
-        animation: ticker 30s linear infinite;
-    }
-    @keyframes ticker {
-        0% { transform: translateX(100%); }
-        100% { transform: translateX(-100%); }
-    }
     
     /* Custom scrollbar for carousel */
     .carousel-container::-webkit-scrollbar {
@@ -70,6 +57,18 @@
     @keyframes pulse-glow {
         0%, 100% { box-shadow: 0 0 5px rgba(185, 28, 28, 0.5); }
         50% { box-shadow: 0 0 15px rgba(185, 28, 28, 0.8); }
+    }
+    
+    /* Updating card sticky effect */
+    .updating-card {
+        box-shadow: 0 4px 20px rgba(220, 38, 38, 0.15);
+    }
+    
+    /* Sidebar scroll content clips behind updating card */
+    @media (min-width: 1024px) {
+        .sidebar-scroll-content {
+            position: relative;
+        }
     }
 </style>
 @endpush
@@ -166,29 +165,6 @@
             </div>
         </div>
     </div>
-    
-    <!-- Breaking News Ticker -->
-    @if($news->count() > 0)
-    <div class="max-w-7xl mx-auto px-4">
-        <div class="bg-gradient-to-r from-red-900/80 via-red-800/80 to-red-900/80 border border-red-700/50 rounded-lg mt-4">
-            <div class="flex items-center">
-                <div class="bg-red-600 px-3 sm:px-4 py-2 flex items-center gap-2 flex-shrink-0 rounded-l-lg">
-                    <span class="animate-pulse w-2 h-2 bg-white rounded-full"></span>
-                    <span class="text-white font-bold text-xs sm:text-sm uppercase tracking-wider">Urgente</span>
-                </div>
-                <div class="ticker-wrapper flex-1 py-2 px-4 overflow-hidden">
-                    <div class="ticker-content">
-                        @foreach($news->take(5) as $item)
-                            <a href="{{ route('news.show', $item->slug) }}" class="text-white/90 hover:text-white mx-6 sm:mx-8 text-sm">
-                                <span class="text-red-400">●</span> {{ $item->title }}
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
 
     <!-- Hero Section - Featured News -->
     @if($featured->count() > 0)
@@ -285,6 +261,53 @@
                 
                 <!-- Main News Feed -->
                 <div class="lg:col-span-2">
+                    <!-- Card EM ATUALIZAÇÃO - Sticky no topo do conteúdo principal -->
+                    @if(isset($updatingNews) && $updatingNews->count() > 0)
+                    <div class="lg:sticky lg:top-32 z-30 mb-6">
+                        <div class="bg-gradient-to-b from-red-950/90 to-gray-900/90 rounded-xl border border-red-600/50 shadow-lg shadow-red-900/30 backdrop-blur-sm overflow-hidden">
+                            <!-- Header -->
+                            <div class="flex items-center justify-between px-4 py-3 bg-red-900/40 border-b border-red-800/50">
+                                <div class="flex items-center gap-2">
+                                    <span class="relative flex h-3 w-3">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                    </span>
+                                    <span class="text-red-400 font-bold text-sm uppercase tracking-wider">Em Atualização</span>
+                                    <span class="text-gray-500 text-xs">({{ $updatingNews->count() }})</span>
+                                </div>
+                                <a href="{{ route('news.updating') }}" 
+                                   class="text-xs text-gray-400 hover:text-red-400 transition-colors flex items-center gap-1 group">
+                                    Ver todas
+                                    <svg class="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </a>
+                            </div>
+                            
+                            <!-- Lista de Headlines -->
+                            <ul class="divide-y divide-gray-800/50">
+                                @foreach($updatingNews->take(3) as $updating)
+                                <li>
+                                    <a href="{{ route('news.show', $updating->slug) }}" 
+                                       class="flex items-center gap-3 px-4 py-2.5 hover:bg-red-900/20 transition-colors group">
+                                        <span class="relative flex h-2 w-2 flex-shrink-0">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                                        </span>
+                                        <span class="text-gray-200 text-sm group-hover:text-red-400 transition-colors line-clamp-1 flex-1">
+                                            {{ $updating->title }}
+                                        </span>
+                                        <span class="text-gray-600 text-xs flex-shrink-0">
+                                            {{ $updating->updating_since ? $updating->updating_since->diffForHumans(null, true) : $updating->created_at->diffForHumans(null, true) }}
+                                        </span>
+                                    </a>
+                                </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Em Alta Carousel (inside left section) -->
                     @if($trending->count() > 0)
                     <div class="mb-8">
@@ -652,7 +675,7 @@
                 
                 <!-- Sidebar -->
                 <aside class="space-y-6">
-                    <!-- Most Viewed (Trending) - Moved to top -->
+                    <!-- Most Viewed (Trending) -->
                     @if($trending->count() > 0)
                     <div class="bg-gradient-to-b from-gray-800/40 to-gray-900/40 rounded-xl p-4 sm:p-5 border border-gray-700/30">
                         <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
@@ -726,10 +749,10 @@
                         </div>
                     </div>
                     @endif
-                    
-                    <!-- Members Only Section - Sticky at bottom -->
+
+                    <!-- Members Only Section - Sticky -->
                     @if(isset($membersOnly) && $membersOnly->count() > 0)
-                    <div class="lg:sticky lg:top-36">
+                    <div class="lg:sticky lg:top-32 z-20">
                         <div class="bg-gradient-to-b from-red-950/40 to-gray-900/40 rounded-xl p-4 sm:p-5 border border-red-900/30">
                             <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
                                 <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
@@ -738,7 +761,7 @@
                                 Exclusivo Membros
                             </h3>
                             <div class="space-y-3">
-                                @foreach($membersOnly as $item)
+                                @foreach($membersOnly->take(5) as $item)
                                 @if(auth()->check())
                                 <a href="{{ route('news.show', $item->slug) }}" class="flex items-start gap-3 group">
                                 @else

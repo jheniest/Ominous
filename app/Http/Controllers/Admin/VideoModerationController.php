@@ -57,12 +57,26 @@ class VideoModerationController extends Controller
             'is_members_only' => 'boolean',
             'is_sensitive' => 'boolean',
             'is_nsfw' => 'boolean',
+            'is_updating' => 'boolean',
         ]);
         
         // Tratar checkboxes não marcados
         $validated['is_members_only'] = $request->has('is_members_only');
         $validated['is_sensitive'] = $request->has('is_sensitive');
         $validated['is_nsfw'] = $request->has('is_nsfw');
+        
+        // Tratar flag de atualização
+        $wasUpdating = $video->is_updating;
+        $validated['is_updating'] = $request->has('is_updating');
+        
+        // Se está marcando como "em atualização" agora, registrar o timestamp
+        if ($validated['is_updating'] && !$wasUpdating) {
+            $validated['updating_since'] = now();
+        }
+        // Se está desmarcando, limpar o timestamp
+        if (!$validated['is_updating'] && $wasUpdating) {
+            $validated['updating_since'] = null;
+        }
         
         // Registrar quem editou
         $validated['edited_by_user_id'] = Auth::id();

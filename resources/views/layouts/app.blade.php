@@ -190,7 +190,7 @@
                     this.scrollContainer.scrollBy({ left: 200, behavior: 'smooth' });
                 }
             }">
-                <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 relative">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
                     <!-- Left Arrow Button -->
                     <button 
                         x-show="showLeftArrow"
@@ -230,7 +230,7 @@
                     <div x-show="showRightArrow" class="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-neutral-950 via-neutral-950/80 to-transparent pointer-events-none z-10"></div>
                     
                     <div x-ref="categoryScroll" 
-                         class="flex items-center gap-3 sm:gap-5 py-2.5 overflow-x-auto scroll-smooth px-6 sm:px-8
+                         class="flex items-center gap-3 sm:gap-4 py-2.5 overflow-x-auto scroll-smooth
                                 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         @php
                             $currentCategory = request()->route('category') ?? request()->get('category');

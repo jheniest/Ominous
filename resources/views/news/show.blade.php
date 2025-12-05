@@ -370,6 +370,15 @@ use App\Helpers\CategoryHelper;
                 <header class="mb-6">
                     <!-- Badges -->
                     <div class="flex flex-wrap items-center gap-2 mb-3">
+                        @if($video->is_updating)
+                        <span class="bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-bold px-3 py-1.5 rounded flex items-center gap-2 animate-pulse">
+                            <span class="relative flex h-2.5 w-2.5">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+                            </span>
+                            AO VIVO - EM ATUALIZAÇÃO
+                        </span>
+                        @endif
                         @if($video->is_members_only)
                         <span class="bg-gradient-to-r from-red-700 to-red-900 text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

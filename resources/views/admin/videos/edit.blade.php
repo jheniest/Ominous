@@ -154,6 +154,18 @@
                     <div class="flex flex-wrap gap-6">
                         <label class="flex items-center gap-3 cursor-pointer">
                             <input type="checkbox" 
+                                   name="is_updating" 
+                                   value="1"
+                                   {{ old('is_updating', $video->is_updating) ? 'checked' : '' }}
+                                   class="w-5 h-5 bg-gray-900 border-red-900 rounded text-red-600 focus:ring-red-500">
+                            <span class="text-gray-300">
+                                <strong class="text-green-400">🔴 Em Atualização (AO VIVO)</strong>
+                                <span class="block text-xs text-gray-500">Notícia está sendo atualizada em tempo real</span>
+                            </span>
+                        </label>
+
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" 
                                    name="is_members_only" 
                                    value="1"
                                    {{ old('is_members_only', $video->is_members_only) ? 'checked' : '' }}

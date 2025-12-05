@@ -62,6 +62,9 @@ Route::prefix('news')->name('news.')->group(function () {
     // Feed principal - público
     Route::get('/', [NewsController::class, 'index'])->name('index');
     
+    // Notícias em atualização - público
+    Route::get('/updating', [NewsController::class, 'updating'])->name('updating');
+    
     // Pesquisa de notícias - público
     Route::get('/search', [NewsController::class, 'search'])->name('search');
     
