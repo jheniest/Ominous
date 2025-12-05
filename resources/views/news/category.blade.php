@@ -2,9 +2,48 @@
 
 @php
 use App\Helpers\CategoryHelper;
+use App\Helpers\SeoHelper;
+
+$categoryDisplay = CategoryHelper::format($category);
+$seoCategoryName = SeoHelper::getCategoryName($category);
+$isSensitiveCategory = in_array($category, ['suicidio', 'chacina', 'massacre']);
 @endphp
 
-@section('title', CategoryHelper::format($category) . ' - Notícias - Atrocidades')
+@section('title', $seoCategoryName . ' - Notícias - Atrocidades')
+@section('meta_description', 'Notícias sobre ' . strtolower($seoCategoryName) . '. Acompanhe a cobertura completa e atualizada dos últimos acontecimentos.')
+@section('meta_keywords', strtolower($seoCategoryName) . ', notícias, atualidades, cobertura, acontecimentos')
+@section('meta_robots', $isSensitiveCategory ? 'index, follow, noimageindex' : 'index, follow')
+@section('canonical', route('news.category', $category))
+
+@section('og_title', $seoCategoryName . ' - Atrocidades')
+@section('og_description', 'Notícias sobre ' . strtolower($seoCategoryName) . '. Cobertura completa e atualizada.')
+@section('twitter_title', $seoCategoryName . ' - Atrocidades')
+@section('twitter_description', 'Notícias sobre ' . strtolower($seoCategoryName) . '.')
+
+@push('schema')
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "CollectionPage",
+    "name": "{{ $seoCategoryName }}",
+    "description": "Notícias sobre {{ strtolower($seoCategoryName) }}",
+    "url": "{{ route('news.category', $category) }}",
+    "isPartOf": {
+        "@@type": "WebSite",
+        "name": "Atrocidades",
+        "url": "{{ config('app.url') }}"
+    },
+    "breadcrumb": {
+        "@@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@@type": "ListItem", "position": 1, "name": "Início", "item": "{{ url('/') }}"},
+            {"@@type": "ListItem", "position": 2, "name": "Notícias", "item": "{{ route('news.index') }}"},
+            {"@@type": "ListItem", "position": 3, "name": "{{ $seoCategoryName }}", "item": "{{ route('news.category', $category) }}"}
+        ]
+    }
+}
+</script>
+@endpush
 
 @section('content')
 <div class="min-h-screen bg-black">
@@ -21,7 +60,7 @@ use App\Helpers\CategoryHelper;
                 <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                 </svg>
-                {{ CategoryHelper::format($category) }}
+                {{ $categoryDisplay }}
             </h1>
             <p class="text-gray-500 mt-2">
                 {{ $news->total() }} {{ $news->total() === 1 ? 'notícia' : 'notícias' }} nesta categoria

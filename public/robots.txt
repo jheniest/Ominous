@@ -1,2 +1,54 @@
+# Atrocidades - Robots.txt
+# Configuração otimizada para SEO
+
+# Regras gerais para todos os bots
 User-agent: *
-Disallow:
+Allow: /
+Allow: /news
+Allow: /news/*
+
+# Bloqueia áreas administrativas e sensíveis
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /password
+Disallow: /profile/edit
+Disallow: /submit
+Disallow: /api/
+Disallow: /_debugbar/
+Disallow: /storage/app/private/
+
+# Bloqueia streaming direto de mídia (evita indexação de vídeos)
+Disallow: /media/stream/
+Disallow: /storage/videos/
+Disallow: /*.mp4$
+Disallow: /*.webm$
+Disallow: /*.mov$
+
+# Googlebot específico
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /media/stream/
+
+# Google Images - não indexar mídia sensível diretamente
+User-agent: Googlebot-Image
+Allow: /
+Disallow: /media/stream/
+Disallow: /storage/videos/
+
+# Google Video - bloquear indexação de vídeos
+User-agent: Googlebot-Video
+Disallow: /
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /media/stream/
+
+# Sitemap
+Sitemap: https://atrocidades.com/sitemap.xml

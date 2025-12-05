@@ -9,9 +9,18 @@ use App\Http\Controllers\GuestPurchaseController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\VideoUpdateController;
 use Illuminate\Support\Facades\Route;
+
+// =================================================================
+// SITEMAP & SEO ROUTES
+// =================================================================
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.index');
+Route::get('/sitemap-pages.xml', [SitemapController::class, 'pages'])->name('sitemap.pages');
+Route::get('/sitemap-news.xml', [SitemapController::class, 'news'])->name('sitemap.news');
+Route::get('/sitemap-categories.xml', [SitemapController::class, 'categories'])->name('sitemap.categories');
 
 // Maintenance page (always accessible)
 Route::get('/maintenance', function () {

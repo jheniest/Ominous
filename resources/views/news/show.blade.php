@@ -1,6 +1,62 @@
 @extends('layouts.app')
 
-@section('title', $video->title . ' - Atrocidades')
+@php
+use App\Helpers\SeoHelper;
+
+// SEO Data
+$seoTitle = SeoHelper::generateTitle($video->title, 'Atrocidades');
+$seoDescription = SeoHelper::generateMetaDescription($video->description ?? $video->subtitle ?? $video->title);
+$seoKeywords = SeoHelper::generateKeywords($video->title, $video->description, $video->category);
+$isSensitive = SeoHelper::isSensitiveContent($video->description, $video->category) || $video->is_sensitive;
+$metaRobots = SeoHelper::getMetaRobots($isSensitive, $video->media && $video->media->count() > 0);
+$categoryName = SeoHelper::getCategoryName($video->category);
+@endphp
+
+@section('title', $seoTitle)
+@section('meta_description', $seoDescription)
+@section('meta_keywords', $seoKeywords)
+@section('meta_robots', $metaRobots)
+@section('canonical', route('news.show', $video->slug))
+
+{{-- Open Graph --}}
+@section('og_type', 'article')
+@section('og_title', $seoTitle)
+@section('og_description', $seoDescription)
+@section('og_image', $video->thumbnail_url ?? asset('images/og-default.jpg'))
+@section('og_article', true)
+@section('og_published_time', $video->created_at->toIso8601String())
+@section('og_modified_time', $video->updated_at->toIso8601String())
+@section('og_section', $categoryName)
+
+{{-- Twitter --}}
+@section('twitter_title', $seoTitle)
+@section('twitter_description', $seoDescription)
+@section('twitter_image', $video->thumbnail_url ?? asset('images/og-default.jpg'))
+
+{{-- Google News --}}
+@section('news_keywords', $seoKeywords)
+
+{{-- Schema.org Article --}}
+@push('schema')
+{!! SeoHelper::generateArticleSchema([
+    'title' => $video->title,
+    'description' => $video->description ?? $video->subtitle,
+    'image' => $video->thumbnail_url,
+    'published_at' => $video->created_at->toIso8601String(),
+    'updated_at' => $video->updated_at->toIso8601String(),
+    'url' => route('news.show', $video->slug),
+    'category' => $video->category,
+    'comments_count' => $video->comments_count ?? 0,
+    'views_count' => $video->views_count ?? 0,
+]) !!}
+
+{!! SeoHelper::generateBreadcrumbSchema([
+    ['name' => 'Início', 'url' => url('/')],
+    ['name' => 'Notícias', 'url' => route('news.index')],
+    ['name' => $categoryName, 'url' => route('news.category', $video->category)],
+    ['name' => SeoHelper::sanitizeForSeo($video->title), 'url' => route('news.show', $video->slug)],
+]) !!}
+@endpush
 
 @push('styles')
 <style>

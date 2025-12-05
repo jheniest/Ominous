@@ -1,6 +1,35 @@
 @extends('layouts.app')
 
-@section('title', 'Feed de Notícias - ' . config('app.name'))
+@php
+use App\Helpers\SeoHelper;
+@endphp
+
+@section('title', 'Últimas Notícias - Atrocidades')
+@section('meta_description', 'Acompanhe as últimas notícias e acontecimentos em tempo real. Cobertura completa de eventos mundiais, conflitos e informações verificadas.')
+@section('meta_keywords', 'últimas notícias, notícias de hoje, acontecimentos, atualidades, cobertura ao vivo, notícias em tempo real')
+@section('canonical', route('news.index'))
+
+@section('og_title', 'Últimas Notícias - Atrocidades')
+@section('og_description', 'Acompanhe as últimas notícias e acontecimentos em tempo real.')
+@section('twitter_title', 'Últimas Notícias - Atrocidades')
+@section('twitter_description', 'Acompanhe as últimas notícias e acontecimentos em tempo real.')
+
+@push('schema')
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "CollectionPage",
+    "name": "Últimas Notícias",
+    "description": "Feed de notícias e acontecimentos em tempo real",
+    "url": "{{ route('news.index') }}",
+    "isPartOf": {
+        "@@type": "WebSite",
+        "name": "Atrocidades",
+        "url": "{{ config('app.url') }}"
+    }
+}
+</script>
+@endpush
 
 @push('styles')
 <style>
@@ -479,176 +508,180 @@
                             this.loading = false;
                         }
                     }">
+                        {{-- Substitua o bloco @forelse inteiro por este código corrigido --}}
+
                         <div id="news-grid" data-has-more="{{ $news->hasMorePages() ? 'true' : 'false' }}">
-                            @forelse($news as $index => $video)
-                                @if($index === 0)
-                                {{-- PRIMEIRO CARD - Horizontal Layout --}}
-                                <div class="news-item mb-6">
-                                    @if($video->is_members_only && !auth()->check())
-                                    <div @click="paywallTitle = '{{ addslashes($video->title) }}'; paywallSlug = '{{ $video->slug }}'; showPaywall = true" class="group cursor-pointer">
-                                    @else
-                                    <a href="{{ route('news.show', $video->slug) }}" class="group block">
-                                    @endif
-                                        <article class="flex flex-col sm:flex-row bg-gradient-to-r from-gray-800/40 to-gray-900/40 rounded-xl overflow-hidden border border-gray-700/30 hover:border-red-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-red-900/20">
-                                            <!-- Image Left -->
-                                            <div class="relative w-full sm:w-1/2 aspect-video sm:aspect-auto sm:min-h-[200px] overflow-hidden flex-shrink-0">
-                                                @if($video->thumbnail_url)
-                                                    <img 
-                                                        src="{{ $video->thumbnail_url }}" 
-                                                        alt="{{ $video->title }}"
-                                                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                    >
-                                                @else
-                                                    <div class="absolute inset-0 bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
-                                                        <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                                                        </svg>
-                                                    </div>
-                                                @endif
-                                                
-                                                <!-- Badges -->
-                                                @if($video->is_members_only)
-                                                    <span class="absolute top-3 left-3 members-badge text-white text-xs font-bold px-2.5 py-1 rounded flex items-center gap-1">
-                                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                                                        </svg>
-                                                        MEMBROS
-                                                    </span>
-                                                @elseif($video->is_sensitive)
-                                                    <span class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded">
-                                                        +18
-                                                    </span>
-                                                @endif
-                                                
-                                                @if($video->category)
-                                                    <span class="absolute top-3 right-3 bg-black/70 text-white text-xs px-2.5 py-1 rounded uppercase">
-                                                        {{ \App\Helpers\CategoryHelper::format($video->category) }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                            
-                                            <!-- Content Right -->
-                                            <div class="flex-1 p-4 sm:p-5 flex flex-col justify-center">
-                                                <h3 class="text-white font-bold text-lg sm:text-xl line-clamp-2 group-hover:text-red-400 transition-colors">
-                                                    {{ $video->title }}
-                                                </h3>
-                                                <p class="text-gray-400 text-sm mt-2 line-clamp-3">
-                                                    {{ Str::limit($video->description ?? $video->summary, 150) }}
-                                                </p>
-                                                <div class="flex items-center gap-4 mt-4 text-xs text-gray-500">
-                                                    <span class="flex items-center gap-1">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                                        </svg>
-                                                        {{ $video->created_at->diffForHumans() }}
-                                                    </span>
-                                                    <span class="flex items-center gap-1">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                                        </svg>
-                                                        {{ number_format($video->views_count) }} views
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </article>
-                                    @if($video->is_members_only && !auth()->check())
-                                    </div>
-                                    @else
-                                    </a>
-                                    @endif
-                                </div>
-                                
-                                {{-- Início do grid para os demais cards --}}
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        @forelse($news as $index => $video)
+                        @if($index === 0)
+                            {{-- PRIMEIRO CARD - Horizontal Layout --}}
+                            <div class="news-item mb-6">
+                                @if($video->is_members_only && !auth()->check())
+                                <div @click="paywallTitle = '{{ addslashes($video->title) }}'; paywallSlug = '{{ $video->slug }}'; showPaywall = true" class="group cursor-pointer">
                                 @else
-                                {{-- DEMAIS CARDS - Grid 2 colunas --}}
-                                <div class="news-item">
-                                    @if($video->is_members_only && !auth()->check())
-                                    <div @click="paywallTitle = '{{ addslashes($video->title) }}'; paywallSlug = '{{ $video->slug }}'; showPaywall = true" class="group cursor-pointer h-full">
-                                    @else
-                                    <a href="{{ route('news.show', $video->slug) }}" class="group block h-full">
-                                    @endif
-                                        <article class="news-card bg-gradient-to-b from-gray-800/30 to-gray-900/30 rounded-xl overflow-hidden border border-gray-700/20 hover:border-red-600/40 transition-all duration-300 hover:shadow-lg hover:shadow-red-900/10 h-full">
-                                            <!-- Media Container -->
-                                            <div class="media-wrapper">
-                                                @if($video->thumbnail_url)
-                                                    <img 
-                                                        src="{{ $video->thumbnail_url }}" 
-                                                        alt="{{ $video->title }}"
-                                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                    >
-                                                @else
-                                                    <div class="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
-                                                        <svg class="w-10 h-10 sm:w-12 sm:h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                                                        </svg>
-                                                    </div>
-                                                @endif
-                                                
-                                                <!-- Gradient overlay -->
-                                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                                                
-                                                <!-- Members Only Badge -->
-                                                @if($video->is_members_only)
-                                                    <span class="absolute top-2 left-2 members-badge text-white text-xs font-bold px-2 py-0.5 rounded flex items-center gap-1">
-                                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                                                        </svg>
-                                                        MEMBROS
-                                                    </span>
-                                                @elseif($video->is_sensitive)
-                                                    <span class="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
-                                                        +18
-                                                    </span>
-                                                @endif
-                                                
-                                                <!-- Category Badge -->
-                                                @if($video->category)
-                                                    <span class="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded uppercase">
-                                                        {{ \App\Helpers\CategoryHelper::format($video->category) }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                            
-                                            <!-- Content -->
-                                            <div class="content-wrapper p-3 sm:p-4">
-                                                <h3 class="text-white font-semibold line-clamp-2 group-hover:text-red-400 transition-colors text-sm sm:text-base">
-                                                    {{ $video->title }}
-                                                </h3>
-                                                <p class="text-gray-400 text-xs sm:text-sm mt-2 line-clamp-2">
-                                                    {{ Str::limit($video->description ?? $video->summary, 80) }}
-                                                </p>
-                                                <div class="flex items-center justify-between mt-3 text-xs text-gray-500">
-                                                    <span>{{ $video->created_at->diffForHumans() }}</span>
-                                                    <span class="flex items-center gap-1">
-                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                                        </svg>
-                                                        {{ number_format($video->views_count) }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </article>
-                                    @if($video->is_members_only && !auth()->check())
-                                    </div>
-                                    @else
-                                    </a>
-                                    @endif
-                                </div>
+                                <a href="{{ route('news.show', $video->slug) }}" class="group block">
                                 @endif
-                            @empty
-                            <div class="col-span-full text-center py-12">
-                                <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                                </svg>
-                                <p class="text-gray-400 text-lg">Nenhuma notícia encontrada</p>
+                                    <article class="flex flex-col sm:flex-row bg-gradient-to-r from-gray-800/40 to-gray-900/40 rounded-xl overflow-hidden border border-gray-700/30 hover:border-red-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-red-900/20">
+                                        <!-- Image Left -->
+                                        <div class="relative w-full sm:w-1/2 aspect-video sm:aspect-auto sm:min-h-[200px] overflow-hidden flex-shrink-0">
+                                            @if($video->thumbnail_url)
+                                                <img 
+                                                    src="{{ $video->thumbnail_url }}" 
+                                                    alt="{{ $video->title }}"
+                                                    class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                >
+                                            @else
+                                                <div class="absolute inset-0 bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
+                                                    <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                                    </svg>
+                                                </div>
+                                            @endif
+                                            
+                                            <!-- Badges -->
+                                            @if($video->is_members_only)
+                                                <span class="absolute top-3 left-3 members-badge text-white text-xs font-bold px-2.5 py-1 rounded flex items-center gap-1">
+                                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                    MEMBROS
+                                                </span>
+                                            @elseif($video->is_sensitive)
+                                                <span class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded">
+                                                    +18
+                                                </span>
+                                            @endif
+                                            
+                                            @if($video->category)
+                                                <span class="absolute top-3 right-3 bg-black/70 text-white text-xs px-2.5 py-1 rounded uppercase">
+                                                    {{ \App\Helpers\CategoryHelper::format($video->category) }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        
+                                        <!-- Content Right -->
+                                        <div class="flex-1 p-4 sm:p-5 flex flex-col justify-center">
+                                            <h3 class="text-white font-bold text-lg sm:text-xl line-clamp-2 group-hover:text-red-400 transition-colors">
+                                                {{ $video->title }}
+                                            </h3>
+                                            <p class="text-gray-400 text-sm mt-2 line-clamp-3">
+                                                {{ Str::limit($video->description ?? $video->summary, 150) }}
+                                            </p>
+                                            <div class="flex items-center gap-4 mt-4 text-xs text-gray-500">
+                                                <span class="flex items-center gap-1">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                    </svg>
+                                                    {{ $video->created_at->diffForHumans() }}
+                                                </span>
+                                                <span class="flex items-center gap-1">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                    </svg>
+                                                    {{ number_format($video->views_count) }} views
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </article>
+                                @if($video->is_members_only && !auth()->check())
+                                </div>
+                                @else
+                                </a>
+                                @endif
                             </div>
-                            @endforelse
+                            
+                            {{-- Início do grid DENTRO do loop --}}
                             @if($news->count() > 1)
-                                </div>{{-- Fecha o grid dos cards secundários --}}
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                             @endif
+                            
+                        @else
+                            {{-- DEMAIS CARDS - Grid 2 colunas --}}
+                            <div class="news-item">
+                                @if($video->is_members_only && !auth()->check())
+                                <div @click="paywallTitle = '{{ addslashes($video->title) }}'; paywallSlug = '{{ $video->slug }}'; showPaywall = true" class="group cursor-pointer h-full">
+                                @else
+                                <a href="{{ route('news.show', $video->slug) }}" class="group block h-full">
+                                @endif
+                                    <article class="news-card bg-gradient-to-b from-gray-800/30 to-gray-900/30 rounded-xl overflow-hidden border border-gray-700/20 hover:border-red-600/40 transition-all duration-300 hover:shadow-lg hover:shadow-red-900/10 h-full">
+                                        <!-- Media Container -->
+                                        <div class="media-wrapper">
+                                            @if($video->thumbnail_url)
+                                                <img 
+                                                    src="{{ $video->thumbnail_url }}" 
+                                                    alt="{{ $video->title }}"
+                                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                >
+                                            @else
+                                                <div class="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
+                                                    <svg class="w-10 h-10 sm:w-12 sm:h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                                    </svg>
+                                                </div>
+                                            @endif
+                                            
+                                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                                            
+                                            @if($video->is_members_only)
+                                                <span class="absolute top-2 left-2 members-badge text-white text-xs font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                    MEMBROS
+                                                </span>
+                                            @elseif($video->is_sensitive)
+                                                <span class="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+                                                    +18
+                                                </span>
+                                            @endif
+                                            
+                                            @if($video->category)
+                                                <span class="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded uppercase">
+                                                    {{ \App\Helpers\CategoryHelper::format($video->category) }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        
+                                        <!-- Content -->
+                                        <div class="content-wrapper p-3 sm:p-4">
+                                            <h3 class="text-white font-semibold line-clamp-2 group-hover:text-red-400 transition-colors text-sm sm:text-base">
+                                                {{ $video->title }}
+                                            </h3>
+                                            <p class="text-gray-400 text-xs sm:text-sm mt-2 line-clamp-2">
+                                                {{ Str::limit($video->description ?? $video->summary, 80) }}
+                                            </p>
+                                            <div class="flex items-center justify-between mt-3 text-xs text-gray-500">
+                                                <span>{{ $video->created_at->diffForHumans() }}</span>
+                                                <span class="flex items-center gap-1">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                    </svg>
+                                                    {{ number_format($video->views_count) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </article>
+                                @if($video->is_members_only && !auth()->check())
+                                </div>
+                                @else
+                                </a>
+                                @endif
+                            </div>
+                        @endif
+                        @empty
+                        <div class="col-span-full text-center py-12">
+                            <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                            </svg>
+                            <p class="text-gray-400 text-lg">Nenhuma notícia encontrada</p>
+                        </div>
+                        @endforelse
+
+                        {{-- Fecha o grid DENTRO do loop --}}
+                        @if($news->count() > 1)
+                        </div>
+                        @endif
                         </div>
                         
                         <!-- Load More Button -->

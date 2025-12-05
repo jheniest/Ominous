@@ -6,29 +6,77 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     <!-- SEO Base -->
-    <title>@yield('title', 'Atrocidades - Portal de Notícias')</title>
-    <meta name="description" content="@yield('meta_description', 'Portal de notícias com cobertura de eventos mundiais, conflitos e acontecimentos relevantes. Informação verificada e atualizada.')">
-    <meta name="keywords" content="@yield('meta_keywords', 'notícias, atualidades, mundo, conflitos, eventos, informação')">
-    <meta name="robots" content="@yield('meta_robots', 'index, follow')">
+    <title>@yield('title', 'Atrocidades - Portal de Notícias e Acontecimentos')</title>
+    <meta name="description" content="@yield('meta_description', 'Portal de notícias com cobertura completa de eventos mundiais, conflitos e acontecimentos relevantes. Informação verificada e atualizada em tempo real.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'notícias, atualidades, mundo, eventos, informação, cobertura ao vivo, últimas notícias')">
+    <meta name="robots" content="@yield('meta_robots', 'index, follow, max-image-preview:large')">
     <meta name="author" content="Atrocidades">
+    <meta name="publisher" content="Atrocidades">
+    <meta name="rating" content="mature">
+    <meta name="distribution" content="global">
     <link rel="canonical" href="@yield('canonical', url()->current())">
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    
+    <!-- Mobile & PWA -->
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:title" content="@yield('og_title', 'Atrocidades - Portal de Notícias')">
-    <meta property="og:description" content="@yield('og_description', 'Portal de notícias com cobertura de eventos mundiais.')">
+    <meta property="og:description" content="@yield('og_description', 'Portal de notícias com cobertura de eventos mundiais e acontecimentos relevantes.')">
     <meta property="og:image" content="@yield('og_image', asset('images/og-default.jpg'))">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="Atrocidades">
     <meta property="og:locale" content="pt_BR">
+    @hasSection('og_article')
+        <meta property="article:published_time" content="@yield('og_published_time')">
+        <meta property="article:modified_time" content="@yield('og_modified_time')">
+        <meta property="article:section" content="@yield('og_section')">
+        <meta property="article:author" content="Atrocidades">
+    @endif
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@atrocidades">
     <meta name="twitter:title" content="@yield('twitter_title', 'Atrocidades - Portal de Notícias')">
     <meta name="twitter:description" content="@yield('twitter_description', 'Portal de notícias com cobertura de eventos mundiais.')">
     <meta name="twitter:image" content="@yield('twitter_image', asset('images/og-default.jpg'))">
     
-    <!-- Schema.org JSON-LD -->
+    <!-- Google News -->
+    <meta name="news_keywords" content="@yield('news_keywords', 'notícias, atualidades')">
+    <meta name="original-source" content="{{ url()->current() }}">
+    
+    <!-- Schema.org JSON-LD - Organization -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "NewsMediaOrganization",
+        "name": "Atrocidades",
+        "url": "{{ config('app.url') }}",
+        "logo": {
+            "@@type": "ImageObject",
+            "url": "{{ asset('images/logo.png') }}",
+            "width": 600,
+            "height": 60
+        },
+        "sameAs": [],
+        "potentialAction": {
+            "@@type": "SearchAction",
+            "target": "{{ route('news.search') }}?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+    
+    <!-- Page-specific Schema -->
     @stack('schema')
     
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
