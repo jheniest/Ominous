@@ -142,7 +142,7 @@
                                 @endif
                                 @if($news->user)
                                 <span class="text-gray-600">
-                                    por <span class="text-gray-400">{{ $news->user->nickname ?? $news->user->name }}</span>
+                                    por <span class="text-gray-400">{{ $news->user->name }}</span>
                                 </span>
                                 @endif
                             </div>

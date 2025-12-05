@@ -39,6 +39,8 @@ class Video extends Model
         'is_members_only',
         'is_updating',
         'updating_since',
+        'last_updated_by_user_id',
+        'updates_closed_at',
         'media_token',
         'media_token_expires',
     ];
@@ -51,6 +53,7 @@ class Video extends Model
             'incident_date' => 'datetime',
             'media_token_expires' => 'datetime',
             'updating_since' => 'datetime',
+            'updates_closed_at' => 'datetime',
             'is_featured' => 'boolean',
             'is_sensitive' => 'boolean',
             'is_nsfw' => 'boolean',
@@ -211,6 +214,22 @@ class Video extends Model
     public function tags()
     {
         return $this->belongsToMany(Tag::class, 'video_tag');
+    }
+
+    /**
+     * Relacionamento com as atualizações da notícia
+     */
+    public function updates()
+    {
+        return $this->hasMany(VideoUpdate::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Relacionamento com o usuário que fez a última atualização
+     */
+    public function lastUpdatedBy()
+    {
+        return $this->belongsTo(User::class, 'last_updated_by_user_id');
     }
 
     public function scopeApproved($query)

@@ -271,6 +271,83 @@
         <main>
             @yield('content')
         </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-neutral-800 bg-neutral-950 mt-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <!-- Brand -->
+                    <div class="md:col-span-1">
+                        <a href="{{ route('news.index') }}" class="text-2xl font-bold text-red-600 hover:text-red-500 transition">
+                            ATROCIDADES
+                        </a>
+                        <p class="mt-3 text-sm text-neutral-500 leading-relaxed">
+                            Portal de notícias com cobertura de eventos mundiais, conflitos e acontecimentos relevantes.
+                        </p>
+                        <div class="mt-4 flex items-center gap-3">
+                            <a href="#" class="text-neutral-500 hover:text-red-500 transition" aria-label="Twitter">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="text-neutral-500 hover:text-red-500 transition" aria-label="Telegram">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Quick Links -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-neutral-300 uppercase tracking-wider mb-4">Navegação</h3>
+                        <ul class="space-y-2">
+                            <li><a href="{{ route('news.index') }}" class="text-sm text-neutral-500 hover:text-red-500 transition">Últimas Notícias</a></li>
+                            <li><a href="{{ route('news.updating') }}" class="text-sm text-neutral-500 hover:text-red-500 transition">Em Atualização</a></li>
+                            @auth
+                            <li><a href="{{ route('news.create') }}" class="text-sm text-neutral-500 hover:text-red-500 transition">Enviar Notícia</a></li>
+                            <li><a href="{{ route('news.my-submissions') }}" class="text-sm text-neutral-500 hover:text-red-500 transition">Minhas Publicações</a></li>
+                            @endauth
+                        </ul>
+                    </div>
+
+                    <!-- Categories -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-neutral-300 uppercase tracking-wider mb-4">Categorias</h3>
+                        <ul class="space-y-2">
+                            @foreach($categoryMenu as $item)
+                            <li>
+                                <a href="{{ route('news.category', ['category' => $item['category']]) }}" class="text-sm text-neutral-500 hover:text-red-500 transition">
+                                    {{ $item['name'] }}
+                                </a>
+                            </li>
+                            @endforeach
+                        </ul>
+                    </div>
+
+                    <!-- Legal -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-neutral-300 uppercase tracking-wider mb-4">Legal</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-sm text-neutral-500 hover:text-red-500 transition">Termos de Uso</a></li>
+                            <li><a href="#" class="text-sm text-neutral-500 hover:text-red-500 transition">Política de Privacidade</a></li>
+                            <li><a href="#" class="text-sm text-neutral-500 hover:text-red-500 transition">Diretrizes da Comunidade</a></li>
+                            <li><a href="#" class="text-sm text-neutral-500 hover:text-red-500 transition">Contato</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Bottom Bar -->
+                <div class="mt-10 pt-6 border-t border-neutral-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <p class="text-xs text-neutral-600">
+                        &copy; {{ date('Y') }} Atrocidades. Todos os direitos reservados.
+                    </p>
+                    <p class="text-xs text-neutral-600">
+                        <span class="text-red-600">⚠</span> Conteúdo adulto. Requer idade mínima de 18 anos.
+                    </p>
+                </div>
+            </div>
+        </footer>
     </div>
     
     @stack('scripts')

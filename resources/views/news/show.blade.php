@@ -321,6 +321,72 @@
     .article-content p:last-child {
         margin-bottom: 0;
     }
+    
+    /* Update Content Styling */
+    .update-content h2 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: white;
+        margin-top: 0.75rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .update-content p {
+        margin-bottom: 0.75rem;
+    }
+    
+    .update-content p:last-child {
+        margin-bottom: 0;
+    }
+    
+    .update-content ul,
+    .update-content ol {
+        margin-left: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .update-content li {
+        margin-bottom: 0.25rem;
+    }
+    
+    .update-content a {
+        color: #f87171;
+        text-decoration: underline;
+    }
+    
+    .update-content a:hover {
+        color: #fca5a5;
+    }
+    
+    .update-content blockquote {
+        border-left: 3px solid #dc2626;
+        padding-left: 1rem;
+        margin: 0.75rem 0;
+        color: #9ca3af;
+        font-style: italic;
+    }
+    
+    /* Rich Editor Styles */
+    [contenteditable="true"]:empty:before {
+        content: "Mais informações sobre esta atualização...";
+        color: #6b7280;
+    }
+    
+    [contenteditable="true"] h2 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: white;
+        margin-top: 0.75rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .reveal-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: rgba(185, 28, 28, 0.9);
+        padding: 10px 20px;
         border-radius: 8px;
         border: 1px solid rgba(255, 255, 255, 0.2);
         cursor: pointer;
@@ -412,7 +478,21 @@ use App\Helpers\CategoryHelper;
                             {{ $video->created_at->format('d/m/Y H:i') }}
                         </span>
                         
-                        @if($video->editedBy)
+                        @if($video->lastUpdatedBy && $video->updates_closed_at)
+                        <span class="flex items-center gap-1 text-green-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            Atualizado por {{ $video->lastUpdatedBy->name }} {{ $video->updates_closed_at->diffForHumans() }}
+                        </span>
+                        @elseif($video->is_updating && $video->lastUpdatedBy)
+                        <span class="flex items-center gap-1 text-red-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            Última atualização por {{ $video->lastUpdatedBy->name }}
+                        </span>
+                        @elseif($video->editedBy)
                         <span class="flex items-center gap-1 text-blue-400">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -684,6 +764,277 @@ use App\Helpers\CategoryHelper;
                         {{ strtoupper($tag->name) }}
                     </a>
                     @endforeach
+                </div>
+                @endif
+
+                <!-- Timeline de Atualizações -->
+                @if($video->is_updating || $video->updates->count() > 0)
+                <div class="mb-8" x-data="{ showUpdateForm: false }">
+                    <!-- Header da Timeline -->
+                    <!-- Timeline Header - Mobile Friendly -->
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                        <!-- Title Section -->
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                            <div class="flex items-center gap-3">
+                                @if($video->is_updating)
+                                <span class="relative flex h-3 w-3 flex-shrink-0">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                </span>
+                                @else
+                                <span class="flex h-3 w-3 rounded-full bg-gray-600 flex-shrink-0"></span>
+                                @endif
+                                <h2 class="text-lg sm:text-xl font-bold text-white">
+                                    @if($video->is_updating)
+                                        Cobertura ao Vivo
+                                    @else
+                                        Histórico de Atualizações
+                                    @endif
+                                </h2>
+                            </div>
+                            @if($video->updates_closed_at && $video->lastUpdatedBy)
+                            <span class="text-xs sm:text-sm text-gray-500 ml-6 sm:ml-0">
+                                Encerrada {{ $video->updates_closed_at->diffForHumans() }} por {{ $video->lastUpdatedBy->name }}
+                            </span>
+                            @endif
+                        </div>
+                        
+                        <!-- Admin Actions - Mobile Friendly -->
+                        @auth
+                        @if(auth()->user()->is_admin && $video->is_updating)
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                            <button 
+                                @click="showUpdateForm = !showUpdateForm" 
+                                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                <span>Adicionar Atualização</span>
+                            </button>
+                            <form action="{{ route('news.updates.close', $video) }}" method="POST" class="inline" onsubmit="return confirm('Tem certeza que deseja encerrar as atualizações?')">
+                                @csrf
+                                <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    <span>Fechar Notícia</span>
+                                </button>
+                            </form>
+                        </div>
+                        @elseif(auth()->user()->is_admin && !$video->is_updating && $video->updates->count() > 0)
+                        <form action="{{ route('news.updates.reopen', $video) }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                <span>Reabrir Atualizações</span>
+                            </button>
+                        </form>
+                        @endif
+                        @endauth
+                    </div>
+
+                    <!-- Formulário de Nova Atualização (Admin) -->
+                    @auth
+                    @if(auth()->user()->is_admin && $video->is_updating)
+                    <div x-show="showUpdateForm" x-collapse class="mb-6">
+                        <form action="{{ route('news.updates.store', $video) }}" method="POST" enctype="multipart/form-data" class="bg-zinc-900/80 border border-red-900/50 rounded-xl p-5">
+                            @csrf
+                            <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                                Nova Atualização
+                            </h3>
+                            
+                            <div class="space-y-4">
+                                <!-- Headline -->
+                                <div>
+                                    <label for="headline" class="block text-sm font-medium text-gray-300 mb-1">Headline *</label>
+                                    <input 
+                                        type="text" 
+                                        name="headline" 
+                                        id="headline" 
+                                        required
+                                        placeholder="Título da atualização..."
+                                        class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                    >
+                                </div>
+                                
+                                <!-- Subheadline com Editor Rico -->
+                                <div x-data="richEditor()" x-init="initEditor()">
+                                    <label class="block text-sm font-medium text-gray-300 mb-1">Detalhes (opcional)</label>
+                                    <div class="bg-zinc-800 border border-zinc-700 rounded-lg overflow-hidden focus-within:border-red-500 focus-within:ring-1 focus-within:ring-red-500">
+                                        <!-- Toolbar -->
+                                        <div class="flex items-center gap-1 px-2 py-1.5 border-b border-zinc-700 bg-zinc-900/50">
+                                            <button type="button" @click="execCmd('bold')" class="p-1.5 rounded hover:bg-zinc-700 text-gray-400 hover:text-white transition" title="Negrito">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"/></svg>
+                                            </button>
+                                            <button type="button" @click="execCmd('italic')" class="p-1.5 rounded hover:bg-zinc-700 text-gray-400 hover:text-white transition" title="Itálico">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 4h4m-2 0v16m-4 0h8"/></svg>
+                                            </button>
+                                            <button type="button" @click="execCmd('underline')" class="p-1.5 rounded hover:bg-zinc-700 text-gray-400 hover:text-white transition" title="Sublinhado">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7v6a5 5 0 0010 0V7M5 21h14"/></svg>
+                                            </button>
+                                            <div class="w-px h-4 bg-zinc-700 mx-1"></div>
+                                            <button type="button" @click="execCmd('insertUnorderedList')" class="p-1.5 rounded hover:bg-zinc-700 text-gray-400 hover:text-white transition" title="Lista">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                                            </button>
+                                            <button type="button" @click="insertHeading()" class="p-1.5 rounded hover:bg-zinc-700 text-gray-400 hover:text-white transition" title="Título">
+                                                <span class="text-xs font-bold">H2</span>
+                                            </button>
+                                            <div class="w-px h-4 bg-zinc-700 mx-1"></div>
+                                            <button type="button" @click="insertLink()" class="p-1.5 rounded hover:bg-zinc-700 text-gray-400 hover:text-white transition" title="Link">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                                            </button>
+                                        </div>
+                                        <!-- Editor Area -->
+                                        <div 
+                                            x-ref="editor"
+                                            contenteditable="true"
+                                            @input="updateContent()"
+                                            @paste="handlePaste($event)"
+                                            class="min-h-[100px] px-4 py-2.5 text-white focus:outline-none"
+                                            style="white-space: pre-wrap;"
+                                        ></div>
+                                    </div>
+                                    <input type="hidden" name="subheadline" x-ref="hiddenInput">
+                                    <p class="text-xs text-gray-500 mt-1">Use a barra de ferramentas para formatar o texto</p>
+                                </div>
+                                
+                                <!-- Mídia -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-1">Mídia (opcional, máx. 5)</label>
+                                    <input 
+                                        type="file" 
+                                        name="media_files[]" 
+                                        multiple
+                                        accept="image/*,video/*"
+                                        class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-red-600 file:text-white hover:file:bg-red-700"
+                                    >
+                                    <p class="text-xs text-gray-500 mt-1">Imagens ou vídeos para esta atualização</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-end gap-3 mt-5">
+                                <button type="button" @click="showUpdateForm = false" class="px-4 py-2 text-gray-400 hover:text-white transition-colors">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors">
+                                    Publicar Atualização
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    @endif
+                    @endauth
+
+                    <!-- Timeline -->
+                    <div class="relative">
+                        <!-- Linha vertical da timeline -->
+                        <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-red-600 via-red-900/50 to-transparent"></div>
+                        
+                        <!-- Aguardando atualização (se em modo ao vivo) -->
+                        @if($video->is_updating)
+                        <div class="relative pl-12 pb-8">
+                            <div class="absolute left-2.5 top-1 w-3 h-3 rounded-full bg-zinc-800 border-2 border-red-500 animate-pulse"></div>
+                            <div class="bg-zinc-900/50 border border-dashed border-gray-700 rounded-lg p-4">
+                                <p class="text-gray-500 text-lg italic">Aguardando atualização...</p>
+                                <p class="text-gray-600 text-sm mt-1">Novas informações serão adicionadas aqui</p>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Atualizações existentes -->
+                        @foreach($video->updates as $update)
+                        <div class="relative pl-12 pb-8 group">
+                            <!-- Ponto da timeline -->
+                            <div class="absolute left-2 top-1 w-4 h-4 rounded-full bg-red-600 border-2 border-zinc-900 group-hover:scale-110 transition-transform"></div>
+                            
+                            <!-- Card da atualização -->
+                            <div class="bg-gradient-to-r from-zinc-900 to-zinc-900/50 border border-zinc-800 rounded-xl p-4 hover:border-red-900/50 transition-colors">
+                                <!-- Meta -->
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2 text-sm text-gray-500">
+                                        <span class="text-red-400 font-medium">{{ $update->created_at->format('H:i') }}</span>
+                                        <span>•</span>
+                                        <span>{{ $update->created_at->format('d/m/Y') }}</span>
+                                        @if($update->user)
+                                        <span>•</span>
+                                        <span>por {{ $update->user->name }}</span>
+                                        @endif
+                                    </div>
+                                    
+                                    @auth
+                                    @if(auth()->user()->is_admin)
+                                    <form action="{{ route('news.updates.destroy', $update) }}" method="POST" class="inline" onsubmit="return confirm('Remover esta atualização?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-gray-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                    @endif
+                                    @endauth
+                                </div>
+                                
+                                <!-- Headline -->
+                                <h3 class="text-white text-lg font-semibold mb-1">{!! strip_tags($update->headline, '<strong><em><b><i><u><mark><span>') !!}</h3>
+                                
+                                <!-- Subheadline -->
+                                @if($update->subheadline)
+                                <div class="text-gray-400 text-sm leading-relaxed prose prose-sm prose-invert max-w-none update-content">{!! $update->safe_subheadline !!}</div>
+                                @endif
+                                
+                                <!-- Mídias da atualização -->
+                                @if($update->media->count() > 0)
+                                <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                    @foreach($update->media as $media)
+                                    <div class="relative aspect-video bg-zinc-800 rounded-lg overflow-hidden">
+                                        @if($media->type === 'video')
+                                        <video 
+                                            src="{{ $media->url }}" 
+                                            controls 
+                                            class="w-full h-full object-cover"
+                                            controlsList="nodownload"
+                                        ></video>
+                                        @else
+                                        <img 
+                                            src="{{ $media->url }}" 
+                                            alt="Mídia da atualização"
+                                            class="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+                                            onclick="window.open('{{ $media->url }}', '_blank')"
+                                        >
+                                        @endif
+                                    </div>
+                                    @endforeach
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                        @endforeach
+
+                        <!-- Notícia original (início da timeline) -->
+                        <div class="relative pl-12">
+                            <!-- Ponto inicial -->
+                            <div class="absolute left-2 top-1 w-4 h-4 rounded-full bg-gray-600 border-2 border-zinc-900"></div>
+                            
+                            <div class="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
+                                <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                                    <span class="text-gray-400 font-medium">{{ $video->created_at->format('H:i') }}</span>
+                                    <span>•</span>
+                                    <span>{{ $video->created_at->format('d/m/Y') }}</span>
+                                    <span>•</span>
+                                    <span class="text-red-400/70">Início da cobertura</span>
+                                </div>
+                                <h3 class="text-gray-400 text-base font-medium">{{ $video->title }}</h3>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 @endif
 
@@ -1228,6 +1579,77 @@ function mediaSlider(totalSlides, isSensitive = false) {
                     }
                 }
             }, { passive: true });
+        }
+    }
+}
+
+// Editor de texto rico para atualizações
+function richEditor() {
+    return {
+        initEditor() {
+            // Configuração inicial do editor
+            this.$refs.editor.innerHTML = '';
+        },
+        
+        execCmd(command, value = null) {
+            document.execCommand(command, false, value);
+            this.$refs.editor.focus();
+            this.updateContent();
+        },
+        
+        insertHeading() {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const h2 = document.createElement('h2');
+                h2.className = 'text-lg font-bold text-white mt-3 mb-1';
+                
+                if (selection.toString()) {
+                    h2.textContent = selection.toString();
+                    range.deleteContents();
+                } else {
+                    h2.textContent = 'Título';
+                }
+                
+                range.insertNode(h2);
+                this.updateContent();
+            }
+        },
+        
+        insertLink() {
+            const url = prompt('Digite a URL do link:', 'https://');
+            if (url) {
+                document.execCommand('createLink', false, url);
+                this.updateContent();
+            }
+        },
+        
+        handlePaste(event) {
+            event.preventDefault();
+            const text = event.clipboardData.getData('text/html') || event.clipboardData.getData('text/plain');
+            
+            // Sanitiza o conteúdo colado
+            const temp = document.createElement('div');
+            temp.innerHTML = text;
+            
+            // Remove scripts e estilos inline
+            temp.querySelectorAll('script, style').forEach(el => el.remove());
+            
+            // Remove atributos perigosos
+            temp.querySelectorAll('*').forEach(el => {
+                [...el.attributes].forEach(attr => {
+                    if (attr.name.startsWith('on') || attr.name === 'style') {
+                        el.removeAttribute(attr.name);
+                    }
+                });
+            });
+            
+            document.execCommand('insertHTML', false, temp.innerHTML);
+            this.updateContent();
+        },
+        
+        updateContent() {
+            this.$refs.hiddenInput.value = this.$refs.editor.innerHTML;
         }
     }
 }

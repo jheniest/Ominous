@@ -10,6 +10,7 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\VideoController;
+use App\Http\Controllers\VideoUpdateController;
 use Illuminate\Support\Facades\Route;
 
 // Maintenance page (always accessible)
@@ -178,6 +179,14 @@ Route::middleware(['auth', 'check.suspended'])->group(function () {
     Route::delete('/news/{video:slug}', [VideoController::class, 'destroy'])->name('news.destroy');
     Route::post('/news/{video:slug}/comments', [VideoController::class, 'storeComment'])->name('news.comments.store');
     Route::delete('/news/comments/{comment}', [VideoController::class, 'destroyComment'])->name('news.comments.destroy');
+    
+    // Video Updates (Timeline) Routes - Admin Only
+    Route::middleware(['admin'])->group(function () {
+        Route::post('/news/{video:slug}/updates', [VideoUpdateController::class, 'store'])->name('news.updates.store');
+        Route::post('/news/{video:slug}/updates/close', [VideoUpdateController::class, 'close'])->name('news.updates.close');
+        Route::post('/news/{video:slug}/updates/reopen', [VideoUpdateController::class, 'reopen'])->name('news.updates.reopen');
+        Route::delete('/news/updates/{update}', [VideoUpdateController::class, 'destroy'])->name('news.updates.destroy');
+    });
     Route::post('/news/{video:slug}/report', [VideoController::class, 'report'])->name('news.report');
     Route::get('/my-submissions', [VideoController::class, 'myVideos'])->name('news.my-submissions');
 });

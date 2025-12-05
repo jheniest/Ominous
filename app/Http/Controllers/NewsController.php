@@ -184,7 +184,12 @@ class NewsController extends Controller
         $video->load([
             'user:id,name,nickname,username,avatar',
             'editedBy:id,name,nickname,username',
+            'lastUpdatedBy:id,name,nickname,username',
             'tags:id,name,slug',
+            'updates' => function ($q) {
+                $q->with(['user:id,name,nickname,username,avatar', 'media'])
+                    ->orderBy('created_at', 'desc');
+            },
             'comments' => function ($q) {
                 $q->with(['user:id,name,nickname,username,avatar,is_admin', 'replies' => function ($r) {
                     $r->with('user:id,name,nickname,username,avatar,is_admin')

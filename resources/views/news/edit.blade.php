@@ -71,19 +71,60 @@
                         @enderror
                     </div>
 
-                    <!-- Description -->
-                    <div class="mb-6">
-                        <label for="description" class="block text-sm font-medium text-gray-300 mb-2">
+                    <!-- Description com Editor Rico -->
+                    <div class="mb-6" x-data="descriptionEditor()" x-init="init()">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
                             Descrição *
                         </label>
-                        <textarea 
-                            id="description" 
-                            name="description" 
-                            rows="5" 
-                            required 
-                            maxlength="5000"
-                            class="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 resize-none @error('description') border-red-500 @enderror">{{ old('description', $video->description) }}</textarea>
-                        <p class="mt-1 text-xs text-gray-500">Máximo de 5000 caracteres</p>
+                        <div class="bg-neutral-800 border border-neutral-700 rounded-lg overflow-hidden focus-within:border-red-500 focus-within:ring-1 focus-within:ring-red-500 @error('description') border-red-500 @enderror">
+                            <!-- Toolbar -->
+                            <div class="flex flex-wrap items-center gap-1 px-3 py-2 border-b border-neutral-700 bg-neutral-900/50">
+                                <button type="button" @click="execCmd('bold')" class="p-2 rounded hover:bg-neutral-700 text-gray-400 hover:text-white transition" title="Negrito (Ctrl+B)">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"/></svg>
+                                </button>
+                                <button type="button" @click="execCmd('italic')" class="p-2 rounded hover:bg-neutral-700 text-gray-400 hover:text-white transition" title="Itálico (Ctrl+I)">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 4h4m-2 0v16m-4 0h8"/></svg>
+                                </button>
+                                <button type="button" @click="execCmd('underline')" class="p-2 rounded hover:bg-neutral-700 text-gray-400 hover:text-white transition" title="Sublinhado (Ctrl+U)">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7v6a5 5 0 0010 0V7M5 21h14"/></svg>
+                                </button>
+                                <div class="w-px h-5 bg-neutral-700 mx-1"></div>
+                                <button type="button" @click="insertHeading('h2')" class="p-2 rounded hover:bg-neutral-700 text-gray-400 hover:text-white transition" title="Título H2">
+                                    <span class="text-xs font-bold">H2</span>
+                                </button>
+                                <button type="button" @click="insertHeading('h3')" class="p-2 rounded hover:bg-neutral-700 text-gray-400 hover:text-white transition" title="Subtítulo H3">
+                                    <span class="text-xs font-bold">H3</span>
+                                </button>
+                                <div class="w-px h-5 bg-neutral-700 mx-1"></div>
+                                <button type="button" @click="execCmd('insertUnorderedList')" class="p-2 rounded hover:bg-neutral-700 text-gray-400 hover:text-white transition" title="Lista com marcadores">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                                </button>
+                                <button type="button" @click="execCmd('insertOrderedList')" class="p-2 rounded hover:bg-neutral-700 text-gray-400 hover:text-white transition" title="Lista numerada">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20h14M7 12h14M7 4h14M3 20h.01M3 12h.01M3 4h.01"/></svg>
+                                </button>
+                                <div class="w-px h-5 bg-neutral-700 mx-1"></div>
+                                <button type="button" @click="insertLink()" class="p-2 rounded hover:bg-neutral-700 text-gray-400 hover:text-white transition" title="Inserir link">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                                </button>
+                                <button type="button" @click="insertBlockquote()" class="p-2 rounded hover:bg-neutral-700 text-gray-400 hover:text-white transition" title="Citação">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+                                </button>
+                            </div>
+                            <!-- Editor Area -->
+                            <div 
+                                x-ref="editor"
+                                contenteditable="true"
+                                @input="updateContent()"
+                                @paste="handlePaste($event)"
+                                @keydown.ctrl.b.prevent="execCmd('bold')"
+                                @keydown.ctrl.i.prevent="execCmd('italic')"
+                                @keydown.ctrl.u.prevent="execCmd('underline')"
+                                class="min-h-[200px] px-4 py-3 text-white focus:outline-none prose prose-invert prose-sm max-w-none"
+                                style="white-space: pre-wrap;"
+                            >{!! old('description', $video->description) !!}</div>
+                        </div>
+                        <input type="hidden" name="description" x-ref="hiddenInput" value="{{ old('description', $video->description) }}">
+                        <p class="mt-1 text-xs text-gray-500">Use a barra de ferramentas para formatar. Suporta títulos, listas, links e citações.</p>
                         @error('description')
                             <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
                         @enderror
@@ -240,4 +281,106 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+    // Editor de descrição
+    function descriptionEditor() {
+        return {
+            init() {
+                // Inicializa o conteúdo do hidden input
+                this.$nextTick(() => {
+                    this.updateContent();
+                });
+            },
+            
+            execCmd(command, value = null) {
+                document.execCommand(command, false, value);
+                this.$refs.editor.focus();
+                this.updateContent();
+            },
+            
+            insertHeading(tag) {
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const heading = document.createElement(tag);
+                    
+                    if (selection.toString()) {
+                        heading.textContent = selection.toString();
+                        range.deleteContents();
+                    } else {
+                        heading.textContent = tag === 'h2' ? 'Título' : 'Subtítulo';
+                    }
+                    
+                    range.insertNode(heading);
+                    
+                    // Move cursor after heading
+                    range.setStartAfter(heading);
+                    range.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    
+                    this.updateContent();
+                }
+            },
+            
+            insertLink() {
+                const url = prompt('Digite a URL do link:', 'https://');
+                if (url) {
+                    document.execCommand('createLink', false, url);
+                    this.updateContent();
+                }
+            },
+            
+            insertBlockquote() {
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const blockquote = document.createElement('blockquote');
+                    blockquote.className = 'border-l-4 border-red-600 pl-4 my-2 text-gray-400 italic';
+                    
+                    if (selection.toString()) {
+                        blockquote.textContent = selection.toString();
+                        range.deleteContents();
+                    } else {
+                        blockquote.textContent = 'Citação...';
+                    }
+                    
+                    range.insertNode(blockquote);
+                    this.updateContent();
+                }
+            },
+            
+            handlePaste(event) {
+                event.preventDefault();
+                const text = event.clipboardData.getData('text/html') || event.clipboardData.getData('text/plain');
+                
+                // Sanitiza o conteúdo colado
+                const temp = document.createElement('div');
+                temp.innerHTML = text;
+                
+                // Remove scripts e estilos
+                temp.querySelectorAll('script, style, meta, link').forEach(el => el.remove());
+                
+                // Remove atributos perigosos
+                temp.querySelectorAll('*').forEach(el => {
+                    [...el.attributes].forEach(attr => {
+                        if (attr.name.startsWith('on') || attr.name === 'style' || attr.name === 'class') {
+                            el.removeAttribute(attr.name);
+                        }
+                    });
+                });
+                
+                document.execCommand('insertHTML', false, temp.innerHTML);
+                this.updateContent();
+            },
+            
+            updateContent() {
+                this.$refs.hiddenInput.value = this.$refs.editor.innerHTML;
+            }
+        }
+    }
+    </script>
+    @endpush
 </x-app-layout>

@@ -66,7 +66,7 @@
         <!-- Videos Section -->
         <div>
             <h2 class="text-2xl font-bold text-red-500 mb-6">
-                Publicações de {{ '@' . $user->nickname }}
+                Publicações de {{ $user->name }}
             </h2>
 
             @if($videos->count() > 0)
