@@ -62,7 +62,6 @@ heroku run php artisan migrate
 
 - [x] Arquivos de configuração criados (railway.json, Procfile, nixpacks.toml)
 - [x] .env.production configurado
-- [ ] FFmpeg instalado no servidor (para thumbnails)
 - [ ] Storage linkado (`php artisan storage:link`)
 - [ ] Migrations executadas (`php artisan migrate --force`)
 - [ ] Cache otimizado (config, route, view)

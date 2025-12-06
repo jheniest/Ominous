@@ -360,16 +360,39 @@
                     </div>
 
                     <!-- Categories -->
-                    <div>
+                    <div x-data="{ showMore: false }">
                         <h3 class="text-sm font-semibold text-neutral-300 uppercase tracking-wider mb-4">Categorias</h3>
                         <ul class="space-y-2">
-                            @foreach($categoryMenu as $item)
+                            @foreach($categoryMenu->take(3) as $item)
                             <li>
                                 <a href="{{ route('news.category', ['category' => $item['category']]) }}" class="text-sm text-neutral-500 hover:text-red-500 transition">
                                     {{ $item['name'] }}
                                 </a>
                             </li>
                             @endforeach
+                            @if($categoryMenu->count() > 3)
+                            <li class="relative">
+                                <button @click="showMore = !showMore" class="text-sm text-neutral-500 hover:text-red-500 transition flex items-center gap-1">
+                                    <span>Mais categorias</span>
+                                    <svg class="w-3 h-3 transition-transform" :class="showMore ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <ul x-show="showMore" 
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 -translate-y-2"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    class="mt-2 space-y-2 pl-3 border-l border-neutral-800">
+                                    @foreach($categoryMenu->skip(3) as $item)
+                                    <li>
+                                        <a href="{{ route('news.category', ['category' => $item['category']]) }}" class="text-sm text-neutral-500 hover:text-red-500 transition">
+                                            {{ $item['name'] }}
+                                        </a>
+                                    </li>
+                                    @endforeach
+                                </ul>
+                            </li>
+                            @endif
                         </ul>
                     </div>
 

@@ -7,8 +7,6 @@ use App\Models\VideoMedia;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use FFMpeg\FFMpeg;
-use FFMpeg\Coordinate\TimeCode;
 
 class VideoMediaService
 {
@@ -18,22 +16,20 @@ class VideoMediaService
     public function processMediaFiles(Video $video, array $files): array
     {
         $mediaItems = [];
-        $hasVideo = false;
         $firstImage = null;
 
         foreach ($files as $index => $file) {
             $mediaItem = $this->storeMediaFile($video, $file, $index);
             $mediaItems[] = $mediaItem;
 
-            if ($mediaItem->type === 'video') {
-                $hasVideo = true;
-            } elseif ($mediaItem->type === 'image' && !$firstImage) {
+            // Capture first image for potential thumbnail
+            if ($mediaItem->type === 'image' && !$firstImage) {
                 $firstImage = $mediaItem;
             }
         }
 
-        // Generate thumbnail
-        $this->generateThumbnail($video, $mediaItems, $hasVideo, $firstImage);
+        // Set thumbnail from first available media (image preferred)
+        $this->setThumbnail($video, $mediaItems, $firstImage);
 
         return $mediaItems;
     }
@@ -83,113 +79,31 @@ class VideoMediaService
     }
 
     /**
-     * Generate thumbnail for video
+     * Set thumbnail for video (uses first image or first media as fallback)
+     * Note: For videos, thumbnail should be uploaded manually via admin panel
      */
-    private function generateThumbnail(Video $video, array $mediaItems, bool $hasVideo, ?VideoMedia $firstImage): void
+    private function setThumbnail(Video $video, array $mediaItems, ?VideoMedia $firstImage): void
     {
-        // Set immediate fallback first (sempre define thumbnail)
+        // Skip if video already has a manually set thumbnail
+        if ($video->thumbnail_url && !str_contains($video->thumbnail_url, 'storage/videos/')) {
+            return;
+        }
+
+        // Prefer first image as thumbnail
+        if ($firstImage) {
+            $video->update([
+                'thumbnail_url' => $firstImage->url,
+            ]);
+            return;
+        }
+
+        // Fallback to first media (even if video - user can update later)
         $firstMedia = $mediaItems[0] ?? null;
         if ($firstMedia) {
             $video->update([
                 'thumbnail_url' => $firstMedia->url,
             ]);
         }
-
-        try {
-            if ($hasVideo) {
-                // Try to generate better thumbnail from video (assíncrono/opcional)
-                $firstVideo = collect($mediaItems)->first(fn($m) => $m->type === 'video');
-                if ($firstVideo) {
-                    $this->extractVideoThumbnail($video, $firstVideo);
-                }
-            } elseif ($firstImage) {
-                // Use first image as thumbnail (já definido acima)
-                $video->update([
-                    'thumbnail_url' => $firstImage->url,
-                ]);
-            }
-        } catch (\Exception $e) {
-            // Keep the fallback already set
-            \Log::warning('Thumbnail generation failed: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Extract thumbnail from video using FFmpeg
-     */
-    private function extractVideoThumbnail(Video $video, VideoMedia $videoMedia): void
-    {
-        try {
-            $videoPath = storage_path('app/public/' . $videoMedia->file_path);
-            
-            // Check if FFmpeg is available
-            if (!$this->isFFmpegAvailable()) {
-                \Log::info('FFmpeg not available, using fallback thumbnail');
-                return; // Keep existing fallback
-            }
-
-            $ffmpeg = FFMpeg::create([
-                'ffmpeg.binaries'  => 'C:/Users/Jhenifer/Downloads/ffmpeg/bin/ffmpeg.exe',
-                'ffprobe.binaries' => 'C:/Users/Jhenifer/Downloads/ffmpeg/bin/ffprobe.exe',
-            ]);
-
-            $videoFile = $ffmpeg->open($videoPath);
-            
-            // Extract frame at 2 seconds (or 10% of video duration)
-            $thumbnailFilename = Str::random(40) . '.jpg';
-            $thumbnailPath = 'thumbnails/' . $thumbnailFilename;
-            $fullThumbnailPath = storage_path('app/public/' . $thumbnailPath);
-
-            // Create thumbnails directory if it doesn't exist
-            if (!file_exists(dirname($fullThumbnailPath))) {
-                mkdir(dirname($fullThumbnailPath), 0755, true);
-            }
-
-            $frame = $videoFile->frame(TimeCode::fromSeconds(2));
-            $frame->save($fullThumbnailPath);
-
-            $video->update([
-                'thumbnail_url' => asset('storage/' . $thumbnailPath),
-            ]);
-        } catch (\Exception $e) {
-            // Fallback to video URL
-            $video->update(['thumbnail_url' => $videoMedia->url]);
-        }
-    }
-
-    /**
-     * Check if FFmpeg is available
-     */
-    private function isFFmpegAvailable(): bool
-    {
-        try {
-            // Try common FFmpeg locations on Windows
-            $paths = [
-                'C:/Users/Jhenifer/Downloads/ffmpeg/bin/ffmpeg.exe',
-                'C:/ffmpeg/bin/ffmpeg.exe',
-                'C:/Program Files/ffmpeg/bin/ffmpeg.exe',
-                'ffmpeg', // System PATH
-            ];
-
-            foreach ($paths as $path) {
-                if (file_exists($path) || $this->commandExists('ffmpeg')) {
-                    return true;
-                }
-            }
-
-            return false;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-
-    /**
-     * Check if command exists in system PATH
-     */
-    private function commandExists(string $command): bool
-    {
-        $return = shell_exec(sprintf("where %s 2>NUL", escapeshellarg($command)));
-        return !empty($return);
     }
 
     /**
@@ -214,5 +128,28 @@ class VideoMediaService
                 Storage::disk('public')->delete($path);
             }
         }
+    }
+
+    /**
+     * Update thumbnail manually
+     */
+    public function updateThumbnail(Video $video, UploadedFile $file): string
+    {
+        // Delete old thumbnail if exists in thumbnails folder
+        if ($video->thumbnail_url && str_contains($video->thumbnail_url, 'storage/thumbnails/')) {
+            $oldPath = str_replace(asset('storage/'), '', $video->thumbnail_url);
+            if (Storage::disk('public')->exists($oldPath)) {
+                Storage::disk('public')->delete($oldPath);
+            }
+        }
+
+        // Store new thumbnail
+        $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('thumbnails', $filename, 'public');
+        $url = asset('storage/' . $path);
+
+        $video->update(['thumbnail_url' => $url]);
+
+        return $url;
     }
 }
